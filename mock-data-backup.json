@@ -1,0 +1,1003 @@
+{
+  "meta": {
+    "app": "asal-dd",
+    "version": 1,
+    "exportedAt": 1767370027539
+  },
+  "settings": {
+    "officeHeader": "ASAL Solutions LTD\n3185 Morse Rd Ste 15, Columbus, Ohio 43231\nPreparer: Abdihaliim Ali\nPhone: ____________   Email: ____________"
+  },
+  "clients": [
+    {
+      "id": "c_1767370027500_0_85aff1",
+      "createdAt": 1766246827500,
+      "updatedAt": 1766765227500,
+      "status": "ready",
+      "name": "James Smith",
+      "phone": "(614) 554-1956",
+      "email": "james.smith@aol.com",
+      "ssn_last4": "4806",
+      "dob": "1987-05-04",
+      "filing_status": "Married Filing Jointly",
+      "address": "987 Cedar Way, Canton, OH 43126",
+      "moved_12mo": "Yes",
+      "id_type": "Passport",
+      "id_exp": "2025-04-02",
+      "notes": "Client 1. Returning client from previous year. Has prior-year audit history - all documents verified.",
+      "dependents": [],
+      "income": {
+        "w2_employer": "",
+        "w2_address": "",
+        "self_employed": "Yes",
+        "business_type": "Cleaning services",
+        "income_notes": "Self-employed part-time. Average weekly income: $1056. Works 26 hours per week.",
+        "expense_notes": "Mileage: 7220 miles. Phone: $119/month. Supplies: $938/year."
+      },
+      "ddq": {
+        "child_lived_half_year": "N/A",
+        "anyone_else_claim": "N/A",
+        "pays_household_costs": "Yes",
+        "missing_ids": "Yes",
+        "docs": "Photo ID (Driver's License) verified. 1099 forms. Business expense receipts. Lease agreement. Utility bills (electric, water). Bank statements.",
+        "preparer_notes": "All documents reviewed and verified on 12/20/2025. Self-employment income verified through bank deposits and 1099 forms. Client attestation signed. All required due diligence questions answered."
+      }
+    },
+    {
+      "id": "c_1767370027539_1_783cbe",
+      "createdAt": 1767024427539,
+      "updatedAt": 1767110827539,
+      "status": "ready",
+      "name": "Mary Johnson",
+      "phone": "(614) 461-5480",
+      "email": "mary.johnson@aol.com",
+      "ssn_last4": "2614",
+      "dob": "1979-07-10",
+      "filing_status": "Single",
+      "address": "369 Willow Dr, Akron, OH 44055",
+      "moved_12mo": "No",
+      "id_type": "State ID",
+      "id_exp": "2027-03-31",
+      "notes": "Client 2. New client for tax season. ",
+      "dependents": [
+        {
+          "name": "Olivia Martin",
+          "dob": "2016-07-04",
+          "ssn_last4": "2296",
+          "relationship": "Grandson",
+          "months_lived": "8",
+          "school_name": "Jefferson Middle",
+          "school_address": "377 School St, Cleveland, OH 44939",
+          "other_parent": "Other Parent, (614) 444-2000",
+          "notes": "Custody agreement on file. Shared custody arrangement."
+        },
+        {
+          "name": "Daniel Davis",
+          "dob": "2017-06-29",
+          "ssn_last4": "1451",
+          "relationship": "Granddaughter",
+          "months_lived": "7",
+          "school_name": "Washington High",
+          "school_address": "390 School St, Columbus, OH 44242",
+          "other_parent": "",
+          "notes": ""
+        },
+        {
+          "name": "Ava Lee",
+          "dob": "2013-02-09",
+          "ssn_last4": "6218",
+          "relationship": "Granddaughter",
+          "months_lived": "11",
+          "school_name": "Madison Elementary",
+          "school_address": "772 School St, Cincinnati, OH 43623",
+          "other_parent": "Other Parent, (614) 369-7369",
+          "notes": ""
+        }
+      ],
+      "income": {
+        "w2_employer": "Honda Manufacturing",
+        "w2_address": "321 Pine Rd, Akron, OH 43473",
+        "self_employed": "No",
+        "business_type": "",
+        "income_notes": "W-2 employee. Annual income approximately $42307. Works 38 hours per week.",
+        "expense_notes": "Standard W-2 employment, no business expenses."
+      },
+      "ddq": {
+        "child_lived_half_year": "Yes",
+        "anyone_else_claim": "No",
+        "pays_household_costs": "Yes",
+        "missing_ids": "No",
+        "docs": "Photo ID (State ID) verified. Birth certificates for all dependents. School enrollment letters. Medical records. W-2 forms. Lease agreement. Utility bills (electric, water). Bank statements.",
+        "preparer_notes": "All documents reviewed and verified on 12/29/2025. Dependent residency confirmed through school records and medical documents. W-2 income verified. Client attestation signed. All required due diligence questions answered."
+      }
+    },
+    {
+      "id": "c_1767370027539_2_29ec5d",
+      "createdAt": 1766938027539,
+      "updatedAt": 1767456427539,
+      "status": "ready",
+      "name": "John Williams",
+      "phone": "(614) 412-1260",
+      "email": "john.williams@hotmail.com",
+      "ssn_last4": "1328",
+      "dob": "1990-12-27",
+      "filing_status": "Qualifying Surviving Spouse",
+      "address": "123 Main St, Akron, OH 44759",
+      "moved_12mo": "No",
+      "id_type": "Passport",
+      "id_exp": "2028-02-20",
+      "notes": "Client 3. New client for tax season. ",
+      "dependents": [
+        {
+          "name": "Mia Moore",
+          "dob": "2014-08-27",
+          "ssn_last4": "9263",
+          "relationship": "Niece",
+          "months_lived": "9",
+          "school_name": "Adams Middle",
+          "school_address": "852 School St, Parma, OH 44368",
+          "other_parent": "Other Parent, (614) 229-9046",
+          "notes": ""
+        },
+        {
+          "name": "Amelia Garcia",
+          "dob": "2010-02-18",
+          "ssn_last4": "4692",
+          "relationship": "Nephew",
+          "months_lived": "8",
+          "school_name": "Roosevelt Elementary",
+          "school_address": "463 School St, Akron, OH 43293",
+          "other_parent": "Other Parent, (614) 258-1500",
+          "notes": ""
+        }
+      ],
+      "income": {
+        "w2_employer": "Target",
+        "w2_address": "456 Oak Ave, Akron, OH 43746",
+        "self_employed": "No",
+        "business_type": "",
+        "income_notes": "W-2 employee. Annual income approximately $65712. Works 39 hours per week.",
+        "expense_notes": "Standard W-2 employment, no business expenses."
+      },
+      "ddq": {
+        "child_lived_half_year": "Yes",
+        "anyone_else_claim": "No",
+        "pays_household_costs": "Yes",
+        "missing_ids": "No",
+        "docs": "Photo ID (Driver's License) verified. Birth certificates for all dependents. School enrollment letters. Medical records. W-2 forms. Lease agreement. Utility bills (electric, water). Bank statements.",
+        "preparer_notes": "All documents reviewed and verified on 12/28/2025. Dependent residency confirmed through school records and medical documents. W-2 income verified. Client attestation signed. All required due diligence questions answered."
+      }
+    },
+    {
+      "id": "c_1767370027539_3_50637d",
+      "createdAt": 1766938027539,
+      "updatedAt": 1766938027539,
+      "status": "ready",
+      "name": "Patricia Brown",
+      "phone": "(614) 845-5578",
+      "email": "patricia.brown@yahoo.com",
+      "ssn_last4": "9581",
+      "dob": "1986-07-26",
+      "filing_status": "Head of Household",
+      "address": "123 Main St, Parma, OH 43126",
+      "moved_12mo": "No",
+      "id_type": "State ID",
+      "id_exp": "2028-02-02",
+      "notes": "Client 4. Returning client from previous year. ",
+      "dependents": [],
+      "income": {
+        "w2_employer": "Starbucks",
+        "w2_address": "258 Spruce Ave, Parma, OH 44390",
+        "self_employed": "No",
+        "business_type": "",
+        "income_notes": "W-2 employee. Annual income approximately $47308. Works 36 hours per week.",
+        "expense_notes": "Standard W-2 employment, no business expenses."
+      },
+      "ddq": {
+        "child_lived_half_year": "N/A",
+        "anyone_else_claim": "N/A",
+        "pays_household_costs": "Yes",
+        "missing_ids": "No",
+        "docs": "Photo ID (Passport) verified. W-2 forms. Lease agreement. Utility bills (electric, water). Bank statements.",
+        "preparer_notes": "All documents reviewed and verified on 12/28/2025. W-2 income verified. Client attestation signed. All required due diligence questions answered."
+      }
+    },
+    {
+      "id": "c_1767370027539_4_b93db5",
+      "createdAt": 1764432427539,
+      "updatedAt": 1764432427539,
+      "status": "ready",
+      "name": "Robert Jones",
+      "phone": "(614) 827-7704",
+      "email": "robert.jones@outlook.com",
+      "ssn_last4": "4036",
+      "dob": "1971-04-13",
+      "filing_status": "Head of Household",
+      "address": "987 Cedar Way, Akron, OH 44507",
+      "moved_12mo": "No",
+      "id_type": "Driver's License",
+      "id_exp": "2027-09-27",
+      "notes": "Client 5. New client for tax season. Has prior-year audit history - all documents verified.",
+      "dependents": [
+        {
+          "name": "Ava Williams",
+          "dob": "2020-12-17",
+          "ssn_last4": "6337",
+          "relationship": "Son",
+          "months_lived": "7",
+          "school_name": "Jefferson Middle",
+          "school_address": "221 School St, Parma, OH 43994",
+          "other_parent": "",
+          "notes": ""
+        }
+      ],
+      "income": {
+        "w2_employer": "",
+        "w2_address": "",
+        "self_employed": "Yes",
+        "business_type": "Cleaning services",
+        "income_notes": "Self-employed full-time. Average weekly income: $834. Works 47 hours per week.",
+        "expense_notes": "Mileage: 16321 miles. Phone: $91/month. Supplies: $897/year."
+      },
+      "ddq": {
+        "child_lived_half_year": "Yes",
+        "anyone_else_claim": "No",
+        "pays_household_costs": "Yes",
+        "missing_ids": "No",
+        "docs": "Photo ID (State ID) verified. Birth certificates for all dependents. School enrollment letters. Medical records. 1099 forms. Business expense receipts. Lease agreement. Utility bills (electric, water). Bank statements.",
+        "preparer_notes": "All documents reviewed and verified on 11/29/2025. Dependent residency confirmed through school records and medical documents. Self-employment income verified through bank deposits and 1099 forms. Client attestation signed. All required due diligence questions answered."
+      }
+    },
+    {
+      "id": "c_1767370027539_5_25b244",
+      "createdAt": 1760026027539,
+      "updatedAt": 1760458027539,
+      "status": "ready",
+      "name": "Jennifer Garcia",
+      "phone": "(614) 669-4906",
+      "email": "jennifer.garcia@aol.com",
+      "ssn_last4": "8174",
+      "dob": "1994-06-23",
+      "filing_status": "Married Filing Separately",
+      "address": "258 Spruce Ave, Akron, OH 43700",
+      "moved_12mo": "Yes",
+      "id_type": "Passport",
+      "id_exp": "2025-06-01",
+      "notes": "Client 6. New client for tax season. ",
+      "dependents": [
+        {
+          "name": "Sophia Hernandez",
+          "dob": "2011-11-12",
+          "ssn_last4": "4945",
+          "relationship": "Niece",
+          "months_lived": "8",
+          "school_name": "Washington High",
+          "school_address": "566 School St, Columbus, OH 44785",
+          "other_parent": "Other Parent, (614) 267-5068",
+          "notes": ""
+        },
+        {
+          "name": "Mia Johnson",
+          "dob": "2017-08-25",
+          "ssn_last4": "3501",
+          "relationship": "Son",
+          "months_lived": "12",
+          "school_name": "Columbus Elementary",
+          "school_address": "262 School St, Cincinnati, OH 44767",
+          "other_parent": "",
+          "notes": ""
+        },
+        {
+          "name": "Liam Garcia",
+          "dob": "2012-03-05",
+          "ssn_last4": "9695",
+          "relationship": "Granddaughter",
+          "months_lived": "7",
+          "school_name": "Jefferson Middle",
+          "school_address": "301 School St, Columbus, OH 43983",
+          "other_parent": "Other Parent, (614) 772-3818",
+          "notes": ""
+        }
+      ],
+      "income": {
+        "w2_employer": "Walgreens",
+        "w2_address": "321 Pine Rd, Akron, OH 43254",
+        "self_employed": "No",
+        "business_type": "",
+        "income_notes": "W-2 employee. Annual income approximately $60154. Works 33 hours per week.",
+        "expense_notes": "Standard W-2 employment, no business expenses."
+      },
+      "ddq": {
+        "child_lived_half_year": "Yes",
+        "anyone_else_claim": "No",
+        "pays_household_costs": "Yes",
+        "missing_ids": "No",
+        "docs": "Photo ID (State ID) verified. Birth certificates for all dependents. School enrollment letters. Medical records. W-2 forms. Lease agreement. Utility bills (electric, water). Bank statements.",
+        "preparer_notes": "All documents reviewed and verified on 10/9/2025. Dependent residency confirmed through school records and medical documents. W-2 income verified. Client attestation signed. All required due diligence questions answered."
+      }
+    },
+    {
+      "id": "c_1767370027539_6_ae9949",
+      "createdAt": 1760371627539,
+      "updatedAt": 1760976427539,
+      "status": "ready",
+      "name": "Michael Miller",
+      "phone": "(614) 643-5408",
+      "email": "michael.miller@yahoo.com",
+      "ssn_last4": "9344",
+      "dob": "1988-07-23",
+      "filing_status": "Single",
+      "address": "789 Elm Dr, Columbus, OH 44650",
+      "moved_12mo": "No",
+      "id_type": "State ID",
+      "id_exp": "2027-06-16",
+      "notes": "Client 7. Returning client from previous year. ",
+      "dependents": [],
+      "income": {
+        "w2_employer": "Kohl's",
+        "w2_address": "789 Elm Dr, Columbus, OH 43346",
+        "self_employed": "No",
+        "business_type": "",
+        "income_notes": "W-2 employee. Annual income approximately $26416. Works 35 hours per week.",
+        "expense_notes": "Standard W-2 employment, no business expenses."
+      },
+      "ddq": {
+        "child_lived_half_year": "N/A",
+        "anyone_else_claim": "N/A",
+        "pays_household_costs": "Yes",
+        "missing_ids": "No",
+        "docs": "Photo ID (State ID) verified. W-2 forms. Lease agreement. Utility bills (electric, water). Bank statements.",
+        "preparer_notes": "All documents reviewed and verified on 10/13/2025. W-2 income verified. Client attestation signed. All required due diligence questions answered."
+      }
+    },
+    {
+      "id": "c_1767370027539_7_e0abf7",
+      "createdAt": 1765901227539,
+      "updatedAt": 1765901227539,
+      "status": "ready",
+      "name": "Linda Davis",
+      "phone": "(614) 496-8805",
+      "email": "linda.davis@hotmail.com",
+      "ssn_last4": "1267",
+      "dob": "1984-02-05",
+      "filing_status": "Head of Household",
+      "address": "654 Maple Ln, Cleveland, OH 44672",
+      "moved_12mo": "No",
+      "id_type": "Driver's License",
+      "id_exp": "2027-02-10",
+      "notes": "Client 8. New client for tax season. ",
+      "dependents": [
+        {
+          "name": "Olivia Hernandez",
+          "dob": "2018-08-29",
+          "ssn_last4": "2983",
+          "relationship": "Granddaughter",
+          "months_lived": "10",
+          "school_name": "Roosevelt Elementary",
+          "school_address": "270 School St, Cleveland, OH 43479",
+          "other_parent": "",
+          "notes": ""
+        }
+      ],
+      "income": {
+        "w2_employer": "Macy's",
+        "w2_address": "147 Birch St, Cleveland, OH 43080",
+        "self_employed": "No",
+        "business_type": "",
+        "income_notes": "W-2 employee. Annual income approximately $67558. Works 38 hours per week.",
+        "expense_notes": "Standard W-2 employment, no business expenses."
+      },
+      "ddq": {
+        "child_lived_half_year": "Yes",
+        "anyone_else_claim": "Yes",
+        "pays_household_costs": "Yes",
+        "missing_ids": "No",
+        "docs": "Photo ID (Driver's License) verified. Birth certificates for all dependents. School enrollment letters. Medical records. W-2 forms. Lease agreement. Utility bills (electric, water). Bank statements.",
+        "preparer_notes": "All documents reviewed and verified on 12/16/2025. Dependent residency confirmed through school records and medical documents. W-2 income verified. Client attestation signed. All required due diligence questions answered."
+      }
+    },
+    {
+      "id": "c_1767370027539_8_aa65cc",
+      "createdAt": 1765037227539,
+      "updatedAt": 1765123627539,
+      "status": "ready",
+      "name": "William Rodriguez",
+      "phone": "(614) 845-1122",
+      "email": "william.rodriguez@hotmail.com",
+      "ssn_last4": "6062",
+      "dob": "1979-05-22",
+      "filing_status": "Married Filing Jointly",
+      "address": "987 Cedar Way, Cleveland, OH 44331",
+      "moved_12mo": "No",
+      "id_type": "Passport",
+      "id_exp": "2026-03-30",
+      "notes": "Client 9. New client for tax season. Has prior-year audit history - all documents verified.",
+      "dependents": [
+        {
+          "name": "Matthew Lopez",
+          "dob": "2016-02-05",
+          "ssn_last4": "4538",
+          "relationship": "Nephew",
+          "months_lived": "7",
+          "school_name": "Lincoln Middle School",
+          "school_address": "657 School St, Canton, OH 44263",
+          "other_parent": "",
+          "notes": ""
+        },
+        {
+          "name": "Sophia Miller",
+          "dob": "2016-05-13",
+          "ssn_last4": "4402",
+          "relationship": "Niece",
+          "months_lived": "9",
+          "school_name": "Washington High",
+          "school_address": "330 School St, Parma, OH 43420",
+          "other_parent": "",
+          "notes": ""
+        }
+      ],
+      "income": {
+        "w2_employer": "",
+        "w2_address": "",
+        "self_employed": "Yes",
+        "business_type": "Construction",
+        "income_notes": "Self-employed full-time. Average weekly income: $979. Works 20 hours per week.",
+        "expense_notes": "Mileage: 5811 miles. Phone: $59/month. Supplies: $869/year."
+      },
+      "ddq": {
+        "child_lived_half_year": "Yes",
+        "anyone_else_claim": "No",
+        "pays_household_costs": "Yes",
+        "missing_ids": "No",
+        "docs": "Photo ID (Driver's License) verified. Birth certificates for all dependents. School enrollment letters. Medical records. 1099 forms. Business expense receipts. Lease agreement. Utility bills (electric, water). Bank statements.",
+        "preparer_notes": "All documents reviewed and verified on 12/6/2025. Dependent residency confirmed through school records and medical documents. Self-employment income verified through bank deposits and 1099 forms. Client attestation signed. All required due diligence questions answered."
+      }
+    },
+    {
+      "id": "c_1767370027539_9_2c5045",
+      "createdAt": 1764346027539,
+      "updatedAt": 1764950827539,
+      "status": "ready",
+      "name": "Elizabeth Martinez",
+      "phone": "(614) 358-6574",
+      "email": "elizabeth.martinez@hotmail.com",
+      "ssn_last4": "4116",
+      "dob": "1991-08-15",
+      "filing_status": "Qualifying Surviving Spouse",
+      "address": "369 Willow Dr, Cleveland, OH 43057",
+      "moved_12mo": "No",
+      "id_type": "Driver's License",
+      "id_exp": "2028-06-19",
+      "notes": "Client 10. Returning client from previous year. ",
+      "dependents": [],
+      "income": {
+        "w2_employer": "Best Buy",
+        "w2_address": "258 Spruce Ave, Cleveland, OH 44868",
+        "self_employed": "No",
+        "business_type": "",
+        "income_notes": "W-2 employee. Annual income approximately $62222. Works 33 hours per week.",
+        "expense_notes": "Standard W-2 employment, no business expenses."
+      },
+      "ddq": {
+        "child_lived_half_year": "N/A",
+        "anyone_else_claim": "N/A",
+        "pays_household_costs": "Yes",
+        "missing_ids": "No",
+        "docs": "Photo ID (Driver's License) verified. W-2 forms. Lease agreement. Utility bills (electric, water). Bank statements.",
+        "preparer_notes": "All documents reviewed and verified on 11/28/2025. W-2 income verified. Client attestation signed. All required due diligence questions answered."
+      }
+    },
+    {
+      "id": "c_1767370027539_10_c4d25e",
+      "createdAt": 1764173227539,
+      "updatedAt": 1764691627539,
+      "status": "ready",
+      "name": "David Hernandez",
+      "phone": "(614) 890-2497",
+      "email": "david.hernandez@aol.com",
+      "ssn_last4": "6151",
+      "dob": "1971-03-15",
+      "filing_status": "Married Filing Separately",
+      "address": "654 Maple Ln, Akron, OH 44454",
+      "moved_12mo": "Yes",
+      "id_type": "Passport",
+      "id_exp": "2027-10-02",
+      "notes": "Client 11. New client for tax season. ",
+      "dependents": [
+        {
+          "name": "Matthew Hernandez",
+          "dob": "2016-06-06",
+          "ssn_last4": "5790",
+          "relationship": "Grandson",
+          "months_lived": "12",
+          "school_name": "Adams Middle",
+          "school_address": "314 School St, Toledo, OH 44874",
+          "other_parent": "",
+          "notes": "Custody agreement on file. Shared custody arrangement."
+        },
+        {
+          "name": "Ethan Lee",
+          "dob": "2013-01-21",
+          "ssn_last4": "1032",
+          "relationship": "Niece",
+          "months_lived": "7",
+          "school_name": "Washington High",
+          "school_address": "697 School St, Cincinnati, OH 43682",
+          "other_parent": "Other Parent, (614) 232-4674",
+          "notes": ""
+        },
+        {
+          "name": "Emma Taylor",
+          "dob": "2020-12-29",
+          "ssn_last4": "3796",
+          "relationship": "Daughter",
+          "months_lived": "11",
+          "school_name": "Franklin High",
+          "school_address": "483 School St, Parma, OH 43962",
+          "other_parent": "",
+          "notes": ""
+        }
+      ],
+      "income": {
+        "w2_employer": "Target",
+        "w2_address": "654 Maple Ln, Akron, OH 44159",
+        "self_employed": "No",
+        "business_type": "",
+        "income_notes": "W-2 employee. Annual income approximately $32541. Works 37 hours per week.",
+        "expense_notes": "Standard W-2 employment, no business expenses."
+      },
+      "ddq": {
+        "child_lived_half_year": "Yes",
+        "anyone_else_claim": "No",
+        "pays_household_costs": "Yes",
+        "missing_ids": "Yes",
+        "docs": "Photo ID (Driver's License) verified. Birth certificates for all dependents. School enrollment letters. Medical records. W-2 forms. Lease agreement. Utility bills (electric, water). Bank statements.",
+        "preparer_notes": "All documents reviewed and verified on 11/26/2025. Dependent residency confirmed through school records and medical documents. W-2 income verified. Client attestation signed. All required due diligence questions answered."
+      }
+    },
+    {
+      "id": "c_1767370027539_11_cdbfdc",
+      "createdAt": 1766074027539,
+      "updatedAt": 1766506027539,
+      "status": "ready",
+      "name": "Barbara Lopez",
+      "phone": "(614) 934-6225",
+      "email": "barbara.lopez@aol.com",
+      "ssn_last4": "1770",
+      "dob": "1971-09-10",
+      "filing_status": "Single",
+      "address": "654 Maple Ln, Dayton, OH 43224",
+      "moved_12mo": "No",
+      "id_type": "Passport",
+      "id_exp": "2025-09-28",
+      "notes": "Client 12. New client for tax season. ",
+      "dependents": [
+        {
+          "name": "Ethan Miller",
+          "dob": "2012-01-02",
+          "ssn_last4": "2778",
+          "relationship": "Grandson",
+          "months_lived": "12",
+          "school_name": "Madison Elementary",
+          "school_address": "722 School St, Columbus, OH 43982",
+          "other_parent": "",
+          "notes": ""
+        },
+        {
+          "name": "Ava Johnson",
+          "dob": "2014-08-19",
+          "ssn_last4": "2953",
+          "relationship": "Daughter",
+          "months_lived": "10",
+          "school_name": "Adams Middle",
+          "school_address": "529 School St, Canton, OH 44631",
+          "other_parent": "Other Parent, (614) 873-8206",
+          "notes": "Custody agreement on file. Shared custody arrangement."
+        }
+      ],
+      "income": {
+        "w2_employer": "FedEx Ground",
+        "w2_address": "321 Pine Rd, Dayton, OH 44458",
+        "self_employed": "No",
+        "business_type": "",
+        "income_notes": "W-2 employee. Annual income approximately $28878. Works 31 hours per week.",
+        "expense_notes": "Standard W-2 employment, no business expenses."
+      },
+      "ddq": {
+        "child_lived_half_year": "Yes",
+        "anyone_else_claim": "No",
+        "pays_household_costs": "Yes",
+        "missing_ids": "No",
+        "docs": "Photo ID (Passport) verified. Birth certificates for all dependents. School enrollment letters. Medical records. W-2 forms. Lease agreement. Utility bills (electric, water). Bank statements.",
+        "preparer_notes": "All documents reviewed and verified on 12/18/2025. Dependent residency confirmed through school records and medical documents. W-2 income verified. Client attestation signed. All required due diligence questions answered."
+      }
+    },
+    {
+      "id": "c_1767370027539_12_4a270d",
+      "createdAt": 1763395627539,
+      "updatedAt": 1763568427539,
+      "status": "ready",
+      "name": "Richard Wilson",
+      "phone": "(614) 231-1015",
+      "email": "richard.wilson@hotmail.com",
+      "ssn_last4": "2313",
+      "dob": "1989-03-18",
+      "filing_status": "Married Filing Jointly",
+      "address": "456 Oak Ave, Parma, OH 43394",
+      "moved_12mo": "No",
+      "id_type": "Passport",
+      "id_exp": "2026-02-28",
+      "notes": "Client 13. Returning client from previous year. Has prior-year audit history - all documents verified.",
+      "dependents": [],
+      "income": {
+        "w2_employer": "",
+        "w2_address": "",
+        "self_employed": "Yes",
+        "business_type": "Sales",
+        "income_notes": "Self-employed part-time. Average weekly income: $605. Works 28 hours per week.",
+        "expense_notes": "Mileage: 24677 miles. Phone: $56/month. Supplies: $872/year."
+      },
+      "ddq": {
+        "child_lived_half_year": "N/A",
+        "anyone_else_claim": "N/A",
+        "pays_household_costs": "Yes",
+        "missing_ids": "No",
+        "docs": "Photo ID (State ID) verified. 1099 forms. Business expense receipts. Lease agreement. Utility bills (electric, water). Bank statements.",
+        "preparer_notes": "All documents reviewed and verified on 11/17/2025. Self-employment income verified through bank deposits and 1099 forms. Client attestation signed. All required due diligence questions answered."
+      }
+    },
+    {
+      "id": "c_1767370027539_13_f3b614",
+      "createdAt": 1761062827539,
+      "updatedAt": 1761149227539,
+      "status": "ready",
+      "name": "Susan Anderson",
+      "phone": "(614) 359-1647",
+      "email": "susan.anderson@aol.com",
+      "ssn_last4": "8209",
+      "dob": "1992-10-07",
+      "filing_status": "Qualifying Surviving Spouse",
+      "address": "147 Birch St, Columbus, OH 44392",
+      "moved_12mo": "No",
+      "id_type": "Passport",
+      "id_exp": "2027-08-31",
+      "notes": "Client 14. New client for tax season. ",
+      "dependents": [
+        {
+          "name": "Jacob Johnson",
+          "dob": "2010-10-14",
+          "ssn_last4": "4484",
+          "relationship": "Grandson",
+          "months_lived": "11",
+          "school_name": "Roosevelt Elementary",
+          "school_address": "778 School St, Columbus, OH 44730",
+          "other_parent": "Other Parent, (614) 968-9557",
+          "notes": "Custody agreement on file. Shared custody arrangement."
+        }
+      ],
+      "income": {
+        "w2_employer": "UPS",
+        "w2_address": "741 Ash Rd, Columbus, OH 43241",
+        "self_employed": "No",
+        "business_type": "",
+        "income_notes": "W-2 employee. Annual income approximately $64160. Works 33 hours per week.",
+        "expense_notes": "Standard W-2 employment, no business expenses."
+      },
+      "ddq": {
+        "child_lived_half_year": "Yes",
+        "anyone_else_claim": "No",
+        "pays_household_costs": "Yes",
+        "missing_ids": "No",
+        "docs": "Photo ID (State ID) verified. Birth certificates for all dependents. School enrollment letters. Medical records. W-2 forms. Lease agreement. Utility bills (electric, water). Bank statements.",
+        "preparer_notes": "All documents reviewed and verified on 10/21/2025. Dependent residency confirmed through school records and medical documents. W-2 income verified. Client attestation signed. All required due diligence questions answered."
+      }
+    },
+    {
+      "id": "c_1767370027539_14_8edbec",
+      "createdAt": 1763827627539,
+      "updatedAt": 1764173227539,
+      "status": "ready",
+      "name": "Joseph Thomas",
+      "phone": "(614) 783-6230",
+      "email": "joseph.thomas@aol.com",
+      "ssn_last4": "4709",
+      "dob": "1972-12-18",
+      "filing_status": "Head of Household",
+      "address": "741 Ash Rd, Cleveland, OH 44260",
+      "moved_12mo": "No",
+      "id_type": "Passport",
+      "id_exp": "2025-05-16",
+      "notes": "Client 15. New client for tax season. ",
+      "dependents": [
+        {
+          "name": "Michael Jackson",
+          "dob": "2011-05-24",
+          "ssn_last4": "8717",
+          "relationship": "Nephew",
+          "months_lived": "7",
+          "school_name": "Franklin High",
+          "school_address": "587 School St, Toledo, OH 43914",
+          "other_parent": "Other Parent, (614) 950-6872",
+          "notes": "Custody agreement on file. Shared custody arrangement."
+        },
+        {
+          "name": "Sophia Brown",
+          "dob": "2010-01-03",
+          "ssn_last4": "7752",
+          "relationship": "Nephew",
+          "months_lived": "8",
+          "school_name": "Adams Middle",
+          "school_address": "553 School St, Parma, OH 44743",
+          "other_parent": "",
+          "notes": ""
+        }
+      ],
+      "income": {
+        "w2_employer": "McDonald's",
+        "w2_address": "258 Spruce Ave, Cleveland, OH 43919",
+        "self_employed": "No",
+        "business_type": "",
+        "income_notes": "W-2 employee. Annual income approximately $62433. Works 33 hours per week.",
+        "expense_notes": "Standard W-2 employment, no business expenses."
+      },
+      "ddq": {
+        "child_lived_half_year": "Yes",
+        "anyone_else_claim": "Yes",
+        "pays_household_costs": "Yes",
+        "missing_ids": "No",
+        "docs": "Photo ID (State ID) verified. Birth certificates for all dependents. School enrollment letters. Medical records. W-2 forms. Lease agreement. Utility bills (electric, water). Bank statements.",
+        "preparer_notes": "All documents reviewed and verified on 11/22/2025. Dependent residency confirmed through school records and medical documents. W-2 income verified. Client attestation signed. All required due diligence questions answered."
+      }
+    },
+    {
+      "id": "c_1767370027539_15_de2b8f",
+      "createdAt": 1766592427539,
+      "updatedAt": 1766851627539,
+      "status": "ready",
+      "name": "Jessica Taylor",
+      "phone": "(614) 445-3189",
+      "email": "jessica.taylor@yahoo.com",
+      "ssn_last4": "8216",
+      "dob": "1975-12-24",
+      "filing_status": "Married Filing Separately",
+      "address": "456 Oak Ave, Toledo, OH 44788",
+      "moved_12mo": "Yes",
+      "id_type": "Driver's License",
+      "id_exp": "2025-04-15",
+      "notes": "Client 16. Returning client from previous year. ",
+      "dependents": [],
+      "income": {
+        "w2_employer": "Lowe's",
+        "w2_address": "321 Pine Rd, Toledo, OH 43510",
+        "self_employed": "No",
+        "business_type": "",
+        "income_notes": "W-2 employee. Annual income approximately $55440. Works 31 hours per week.",
+        "expense_notes": "Standard W-2 employment, no business expenses."
+      },
+      "ddq": {
+        "child_lived_half_year": "N/A",
+        "anyone_else_claim": "N/A",
+        "pays_household_costs": "Yes",
+        "missing_ids": "No",
+        "docs": "Photo ID (Driver's License) verified. W-2 forms. Lease agreement. Utility bills (electric, water). Bank statements.",
+        "preparer_notes": "All documents reviewed and verified on 12/24/2025. W-2 income verified. Client attestation signed. All required due diligence questions answered."
+      }
+    },
+    {
+      "id": "c_1767370027539_16_d0bd66",
+      "createdAt": 1760026027539,
+      "updatedAt": 1760285227539,
+      "status": "ready",
+      "name": "Thomas Moore",
+      "phone": "(614) 501-3454",
+      "email": "thomas.moore@hotmail.com",
+      "ssn_last4": "6289",
+      "dob": "1994-10-08",
+      "filing_status": "Single",
+      "address": "147 Birch St, Cincinnati, OH 43182",
+      "moved_12mo": "No",
+      "id_type": "Passport",
+      "id_exp": "2025-05-28",
+      "notes": "Client 17. New client for tax season. Has prior-year audit history - all documents verified.",
+      "dependents": [
+        {
+          "name": "Liam Moore",
+          "dob": "2013-03-21",
+          "ssn_last4": "1935",
+          "relationship": "Daughter",
+          "months_lived": "12",
+          "school_name": "Franklin High",
+          "school_address": "968 School St, Akron, OH 43738",
+          "other_parent": "",
+          "notes": ""
+        },
+        {
+          "name": "Liam Anderson",
+          "dob": "2019-09-10",
+          "ssn_last4": "5819",
+          "relationship": "Daughter",
+          "months_lived": "9",
+          "school_name": "Roosevelt Elementary",
+          "school_address": "909 School St, Parma, OH 43019",
+          "other_parent": "Other Parent, (614) 626-6533",
+          "notes": ""
+        }
+      ],
+      "income": {
+        "w2_employer": "",
+        "w2_address": "",
+        "self_employed": "Yes",
+        "business_type": "Cleaning services",
+        "income_notes": "Self-employed full-time. Average weekly income: $754. Works 47 hours per week.",
+        "expense_notes": "Mileage: 6351 miles. Phone: $133/month. Supplies: $355/year."
+      },
+      "ddq": {
+        "child_lived_half_year": "Yes",
+        "anyone_else_claim": "No",
+        "pays_household_costs": "Yes",
+        "missing_ids": "No",
+        "docs": "Photo ID (Driver's License) verified. Birth certificates for all dependents. School enrollment letters. Medical records. 1099 forms. Business expense receipts. Lease agreement. Utility bills (electric, water). Bank statements.",
+        "preparer_notes": "All documents reviewed and verified on 10/9/2025. Dependent residency confirmed through school records and medical documents. Self-employment income verified through bank deposits and 1099 forms. Client attestation signed. All required due diligence questions answered."
+      }
+    },
+    {
+      "id": "c_1767370027539_17_c34856",
+      "createdAt": 1765123627539,
+      "updatedAt": 1765210027539,
+      "status": "ready",
+      "name": "Sarah Jackson",
+      "phone": "(614) 898-8824",
+      "email": "sarah.jackson@aol.com",
+      "ssn_last4": "1722",
+      "dob": "1980-12-18",
+      "filing_status": "Qualifying Surviving Spouse",
+      "address": "741 Ash Rd, Toledo, OH 44048",
+      "moved_12mo": "No",
+      "id_type": "State ID",
+      "id_exp": "2025-07-05",
+      "notes": "Client 18. New client for tax season. ",
+      "dependents": [
+        {
+          "name": "Emma Jones",
+          "dob": "2014-02-16",
+          "ssn_last4": "5001",
+          "relationship": "Granddaughter",
+          "months_lived": "10",
+          "school_name": "Madison Elementary",
+          "school_address": "280 School St, Parma, OH 44978",
+          "other_parent": "Other Parent, (614) 813-5064",
+          "notes": ""
+        },
+        {
+          "name": "Liam Lopez",
+          "dob": "2012-09-07",
+          "ssn_last4": "3145",
+          "relationship": "Grandson",
+          "months_lived": "9",
+          "school_name": "Adams Middle",
+          "school_address": "691 School St, Akron, OH 43730",
+          "other_parent": "Other Parent, (614) 236-6873",
+          "notes": "Custody agreement on file. Shared custody arrangement."
+        }
+      ],
+      "income": {
+        "w2_employer": "Nationwide Insurance",
+        "w2_address": "321 Pine Rd, Toledo, OH 43472",
+        "self_employed": "No",
+        "business_type": "",
+        "income_notes": "W-2 employee. Annual income approximately $34139. Works 36 hours per week.",
+        "expense_notes": "Standard W-2 employment, no business expenses."
+      },
+      "ddq": {
+        "child_lived_half_year": "Yes",
+        "anyone_else_claim": "No",
+        "pays_household_costs": "Yes",
+        "missing_ids": "No",
+        "docs": "Photo ID (Driver's License) verified. Birth certificates for all dependents. School enrollment letters. Medical records. W-2 forms. Lease agreement. Utility bills (electric, water). Bank statements.",
+        "preparer_notes": "All documents reviewed and verified on 12/7/2025. Dependent residency confirmed through school records and medical documents. W-2 income verified. Client attestation signed. All required due diligence questions answered."
+      }
+    },
+    {
+      "id": "c_1767370027539_18_90a961",
+      "createdAt": 1763482027539,
+      "updatedAt": 1763741227539,
+      "status": "ready",
+      "name": "Christopher Martin",
+      "phone": "(614) 602-2708",
+      "email": "christopher.martin@gmail.com",
+      "ssn_last4": "3478",
+      "dob": "1983-08-20",
+      "filing_status": "Married Filing Separately",
+      "address": "789 Elm Dr, Cincinnati, OH 44475",
+      "moved_12mo": "No",
+      "id_type": "State ID",
+      "id_exp": "2026-05-21",
+      "notes": "Client 19. Returning client from previous year. ",
+      "dependents": [],
+      "income": {
+        "w2_employer": "Kroger",
+        "w2_address": "369 Willow Dr, Cincinnati, OH 43251",
+        "self_employed": "No",
+        "business_type": "",
+        "income_notes": "W-2 employee. Annual income approximately $46174. Works 33 hours per week.",
+        "expense_notes": "Standard W-2 employment, no business expenses."
+      },
+      "ddq": {
+        "child_lived_half_year": "N/A",
+        "anyone_else_claim": "N/A",
+        "pays_household_costs": "Yes",
+        "missing_ids": "No",
+        "docs": "Photo ID (State ID) verified. W-2 forms. Lease agreement. Utility bills (electric, water). Bank statements.",
+        "preparer_notes": "All documents reviewed and verified on 11/18/2025. W-2 income verified. Client attestation signed. All required due diligence questions answered."
+      }
+    },
+    {
+      "id": "c_1767370027539_19_5641a7",
+      "createdAt": 1765037227539,
+      "updatedAt": 1765037227539,
+      "status": "ready",
+      "name": "Karen Lee",
+      "phone": "(614) 949-2379",
+      "email": "karen.lee@gmail.com",
+      "ssn_last4": "7559",
+      "dob": "1985-06-14",
+      "filing_status": "Married Filing Separately",
+      "address": "369 Willow Dr, Columbus, OH 44885",
+      "moved_12mo": "No",
+      "id_type": "State ID",
+      "id_exp": "2028-04-01",
+      "notes": "Client 20. New client for tax season. ",
+      "dependents": [
+        {
+          "name": "Matthew Williams",
+          "dob": "2016-12-04",
+          "ssn_last4": "7843",
+          "relationship": "Grandson",
+          "months_lived": "8",
+          "school_name": "Jefferson Middle",
+          "school_address": "201 School St, Cincinnati, OH 43238",
+          "other_parent": "",
+          "notes": ""
+        },
+        {
+          "name": "Isabella Lee",
+          "dob": "2014-08-23",
+          "ssn_last4": "8735",
+          "relationship": "Granddaughter",
+          "months_lived": "12",
+          "school_name": "Adams Middle",
+          "school_address": "676 School St, Dayton, OH 43780",
+          "other_parent": "",
+          "notes": ""
+        },
+        {
+          "name": "Olivia Johnson",
+          "dob": "2019-07-04",
+          "ssn_last4": "2866",
+          "relationship": "Nephew",
+          "months_lived": "11",
+          "school_name": "Franklin High",
+          "school_address": "801 School St, Cleveland, OH 44306",
+          "other_parent": "Other Parent, (614) 222-9190",
+          "notes": "Custody agreement on file. Shared custody arrangement."
+        }
+      ],
+      "income": {
+        "w2_employer": "Macy's",
+        "w2_address": "456 Oak Ave, Columbus, OH 44761",
+        "self_employed": "No",
+        "business_type": "",
+        "income_notes": "W-2 employee. Annual income approximately $70476. Works 34 hours per week.",
+        "expense_notes": "Standard W-2 employment, no business expenses."
+      },
+      "ddq": {
+        "child_lived_half_year": "Yes",
+        "anyone_else_claim": "No",
+        "pays_household_costs": "Yes",
+        "missing_ids": "No",
+        "docs": "Photo ID (State ID) verified. Birth certificates for all dependents. School enrollment letters. Medical records. W-2 forms. Lease agreement. Utility bills (electric, water). Bank statements.",
+        "preparer_notes": "All documents reviewed and verified on 12/6/2025. Dependent residency confirmed through school records and medical documents. W-2 income verified. Client attestation signed. All required due diligence questions answered."
+      }
+    }
+  ],
+  "files": []
+}

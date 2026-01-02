@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ASAL Solutions LTD — Tax Due Diligence</title>
+  <link rel="icon" href="assets/app-icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">
+        <img src="assets/app-icon.svg" alt="ASAL" />
+        <div>
+          <h1>ASAL Solutions LTD — Due Diligence</h1>
+          <div class="meta">
+            3185 Morse Rd Ste 15, Columbus, Ohio 43231 • Preparer: Abdihaliim Ali<br/>
+            Phone: 615-638-2490 • Email: 1@asal.llc<br/>
+            Offline-first • Sort/search • File uploads • Print packet • Backups
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="primary" id="btnNew">New Client</button>
+        <button id="btnQuickBackup">Quick Backup</button>
+        <button class="danger" id="btnWipe">Wipe Local Data</button>
+      </div>
+    </div>
+
+    <div class="tabs" id="tabs">
+      <div class="tab active" data-tab="dashboard">Dashboard</div>
+      <div class="tab" data-tab="clients">Clients</div>
+      <div class="tab" data-tab="backup">Backup</div>
+      <div class="tab" data-tab="settings">Settings</div>
+      <div class="pill" style="margin-left:auto">
+        <span>Status:</span> <b id="dbStatus">Initializing…</b>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <section class="card" id="tab-dashboard">
+      <h2>Today’s View</h2>
+
+      <div class="row">
+        <div>
+          <label>Search</label>
+          <input id="globalSearch" placeholder="Search clients, dependents, notes…" />
+        </div>
+        <div>
+          <label>Quick filters</label>
+          <select id="quickFilter">
+            <option value="all">All</option>
+            <option value="needs_docs">Needs documents</option>
+            <option value="ready_print">Ready to print</option>
+            <option value="has_dependents">Has dependents</option>
+            <option value="self_employed">Self-employed</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="kpis">
+        <div class="kpi">
+          <div class="t">Total clients</div>
+          <div class="v" id="kpiClients">0</div>
+        </div>
+        <div class="kpi">
+          <div class="t">Open cases (draft)</div>
+          <div class="v" id="kpiDrafts">0</div>
+        </div>
+        <div class="kpi">
+          <div class="t">Needs documents</div>
+          <div class="v" id="kpiNeedsDocs">0</div>
+        </div>
+        <div class="kpi">
+          <div class="t">Files stored locally</div>
+          <div class="v" id="kpiFiles">0</div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="row">
+        <div class="card" style="box-shadow:none">
+          <h3>Smart checklist</h3>
+          <div class="small">This is the “crazy big” part—extra tools you might not always need, but they’re here.</div>
+          <div class="divider"></div>
+          <div class="small">
+            ✅ Auto-flag common red flags (missing SSNs, unclear residency, “not sure” answers)<br/>
+            ✅ Document checklist per client (ID, birth cert, school letter, lease, utilities, W-2/1099s)<br/>
+            ✅ “Explain how verified” notes (protects preparer)<br/>
+            ✅ Client attestation + signature lines<br/>
+            ✅ Attachments stored offline (IDs, letters, PDFs)<br/>
+            ✅ Export/import database backups (JSON)
+          </div>
+        </div>
+
+        <div class="card" style="box-shadow:none">
+          <h3>Recent clients</h3>
+          <div class="small">Click to open and continue.</div>
+          <div class="divider"></div>
+          <div id="recentList" class="small">Loading…</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CLIENTS -->
+    <section class="card" id="tab-clients" style="display:none">
+      <h2>Clients</h2>
+
+      <div class="row">
+        <div>
+          <label>Search clients</label>
+          <input id="clientSearch" placeholder="Name, phone, filing status, notes…" />
+        </div>
+        <div>
+          <label>Sort</label>
+          <select id="sortBy">
+            <option value="updatedAt_desc">Last updated (newest)</option>
+            <option value="updatedAt_asc">Last updated (oldest)</option>
+            <option value="name_asc">Name (A→Z)</option>
+            <option value="name_desc">Name (Z→A)</option>
+            <option value="createdAt_desc">Created (newest)</option>
+            <option value="createdAt_asc">Created (oldest)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr>
+              <th><span class="sort" data-sort="name">Client</span></th>
+              <th>Filing</th>
+              <th>Dependents</th>
+              <th>Docs</th>
+              <th>Flags</th>
+              <th>Updated</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="clientTbody"></tbody>
+        </table>
+      </div>
+
+      <div class="hint small" style="margin-top:10px">
+        Tip: Press <span class="kbd">N</span> for New Client, <span class="kbd">/</span> to focus search.
+      </div>
+    </section>
+
+    <!-- BACKUP -->
+    <section class="card" id="tab-backup" style="display:none">
+      <h2>Backup & Transfer</h2>
+
+      <div class="row">
+        <div>
+          <label>Export everything (clients + files)</label>
+          <button class="primary" id="btnExport">Export JSON Backup</button>
+          <div class="small" style="margin-top:8px">Saves a single JSON file you can store safely.</div>
+        </div>
+        <div>
+          <label>Import a backup</label>
+          <button id="btnImport">Import JSON Backup</button>
+          <input id="importFile" type="file" accept="application/json" style="display:none" />
+          <div class="small" style="margin-top:8px">Restores clients and uploaded files into this browser.</div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="row">
+        <div>
+          <label>Export selected clients (without files)</label>
+          <button id="btnExportLite">Export Lite JSON</button>
+          <div class="small" style="margin-top:8px">Good for sharing with another system, smaller file.</div>
+        </div>
+        <div>
+          <label>Data health</label>
+          <div class="pill"><span>Records:</span> <b id="healthClients">0</b></div>
+          <div class="pill"><span>Files:</span> <b id="healthFiles">0</b></div>
+          <div class="pill"><span>DB version:</span> <b id="healthVer">1</b></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section class="card" id="tab-settings" style="display:none">
+      <h2>Settings</h2>
+
+      <div class="row">
+        <div>
+          <label>Office header (shows on print packet)</label>
+          <textarea id="officeHeader"></textarea>
+          <div class="small" style="margin-top:8px">Default includes ASAL Solutions LTD + address + preparer name.</div>
+        </div>
+        <div>
+          <label>Defaults</label>
+          <div class="small">
+            <div class="pill"><span>Auto-save:</span> <b>On</b></div>
+            <div class="pill"><span>Offline storage:</span> <b>IndexedDB</b></div>
+            <div class="pill"><span>Private:</span> <b>Local-only</b></div>
+          </div>
+          <div class="divider"></div>
+          <button id="btnResetSettings">Reset Settings</button>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="row">
+        <div>
+          <label>Testing & Development</label>
+          <button id="btnGenerateMockData" class="primary">Generate 20 Mock Clients</button>
+          <div class="small" style="margin-top:8px">
+            Creates 20 test clients with all fields filled. Useful for testing and demos.
+          </div>
+        </div>
+        <div>
+          <label>Development Tools</label>
+          <div class="small">
+            <div class="pill"><span>Mock data:</span> <b>Available</b></div>
+            <div class="pill"><span>Console access:</span> <b>generateMockData()</b></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="small">
+        <b>Big ideas you can add later (optional):</b><br/>
+        • Multi-user login + cloud sync (Firebase)<br/>
+        • Role permissions (admin / preparer / intake assistant)<br/>
+        • E-signature capture (canvas) + audit log<br/>
+        • OCR & document classification (client ID, W-2, 1099)<br/>
+        • Task board (missing docs, callbacks, returns waiting)<br/>
+        • Billing workflow (if you ever want it)<br/>
+      </div>
+    </section>
+
+    <div class="footer">
+      <div>© <span id="year"></span> ASAL Solutions LTD • Local/offline app</div>
+      <div class="links">
+        <span class="pill"><span>Keyboard:</span> <b>N</b> new • <b>/</b> search • <b>Esc</b> close</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CLIENT EDITOR -->
+  <div class="modal" id="modal">
+    <div class="panel">
+      <header>
+        <div>
+          <h2 id="modalTitle">Client</h2>
+          <div class="small" id="modalSub">Create or update due diligence and attach documents.</div>
+        </div>
+        <div class="right">
+          <div class="modalStatus">
+            <div class="pill"><span>Auto-save:</span> <b>On</b></div>
+            <div class="pill"><span>Last saved:</span> <b id="lastSavedAt">—</b></div>
+            <div class="small" id="autosaveStatus">Idle</div>
+          </div>
+          <button class="primary" id="btnSave">Save</button>
+          <button id="btnClose">Close</button>
+        </div>
+      </header>
+
+      <div class="tabs" id="modalTabs">
+        <div class="tab active" data-mtab="profile">Profile</div>
+        <div class="tab" data-mtab="dependents">Dependents</div>
+        <div class="tab" data-mtab="income">Income</div>
+        <div class="tab" data-mtab="ddq">Due Diligence</div>
+        <div class="tab" data-mtab="files">Files</div>
+        <div class="tab" data-mtab="print">Print</div>
+      </div>
+
+      <!-- PROFILE -->
+      <section id="mtab-profile">
+        <div class="row">
+          <div>
+            <label>Required checklist (non-blocking)</label>
+            <div id="requiredChecklist" class="checklist"></div>
+            <div class="small" style="margin-top:6px">Use this as a quick self-check before finalizing.</div>
+          </div>
+          <div>
+            <label>Change history</label>
+            <div id="changeHistory" class="history"></div>
+            <div class="small" style="margin-top:6px">Logs fields updated during saves.</div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="row">
+          <div>
+            <label>Client full legal name</label>
+            <input id="f_name" placeholder="e.g., John A. Smith" />
+          </div>
+          <div>
+            <label>Phone</label>
+            <input id="f_phone" placeholder="(614) 000-0000" />
+          </div>
+          <div>
+            <label>Email</label>
+            <input id="f_email" placeholder="client@email.com" />
+          </div>
+          <div>
+            <label>SSN/ITIN (last 4 ok for intake)</label>
+            <input id="f_ssn" placeholder="1234" />
+          </div>
+          <div>
+            <label>Date of birth</label>
+            <input id="f_dob" type="date" />
+          </div>
+          <div>
+            <label>Filing status intent</label>
+            <select id="f_filing">
+              <option value="">Select…</option>
+              <option>Single</option>
+              <option>Head of Household</option>
+              <option>Married Filing Jointly</option>
+              <option>Married Filing Separately</option>
+              <option>Qualifying Surviving Spouse</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="row">
+          <div>
+            <label>Current address</label>
+            <input id="f_address" placeholder="Street, City, State ZIP" />
+          </div>
+          <div>
+            <label>Moved in last 12 months?</label>
+            <select id="f_moved">
+              <option value="">Select…</option>
+              <option>No</option>
+              <option>Yes</option>
+            </select>
+          </div>
+          <div>
+            <label>Photo ID type</label>
+            <select id="f_idtype">
+              <option value="">Select…</option>
+              <option>Driver’s License</option>
+              <option>State ID</option>
+              <option>Passport</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div>
+            <label>ID expiration</label>
+            <input id="f_idexp" type="date" />
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <label>Internal notes</label>
+        <textarea id="f_notes" placeholder="Anything important: prior-year issues, spouse situation, residency story, etc."></textarea>
+      </section>
+
+      <!-- DEPENDENTS -->
+      <section id="mtab-dependents" style="display:none">
+        <div class="row">
+          <div>
+            <button class="primary" id="btnAddDep">+ Add dependent</button>
+            <div class="small" style="margin-top:8px">Add each child/dependent. This feeds your print packet table.</div>
+          </div>
+          <div>
+            <div class="pill"><span>Total dependents:</span> <b id="depCount">0</b></div>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="deps" id="deps"></div>
+      </section>
+
+      <!-- INCOME -->
+      <section id="mtab-income" style="display:none">
+        <div class="row">
+          <div>
+            <label>W-2 employer name</label>
+            <input id="i_w2employer" placeholder="Employer name" />
+          </div>
+          <div>
+            <label>Employer address</label>
+            <input id="i_w2addr" placeholder="Street, City, State ZIP" />
+          </div>
+          <div>
+            <label>Self-employed / 1099?</label>
+            <select id="i_self">
+              <option value="">Select…</option>
+              <option>No</option>
+              <option>Yes</option>
+            </select>
+          </div>
+          <div>
+            <label>Business type</label>
+            <input id="i_bus" placeholder="rideshare, cleaning, trucking, sales..." />
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="row">
+          <div>
+            <label>Income notes</label>
+            <textarea id="i_income_notes" placeholder="weekly income, months worked, who paid, 1099 forms expected…"></textarea>
+          </div>
+          <div>
+            <label>Expense notes</label>
+            <textarea id="i_exp_notes" placeholder="mileage, supplies, phone, rent, equipment…"></textarea>
+          </div>
+        </div>
+      </section>
+
+      <!-- DDQ -->
+      <section id="mtab-ddq" style="display:none">
+        <div class="row">
+          <div>
+            <label>Did any child live with you more than half the year?</label>
+            <select id="d_child_half">
+              <option value="">Select…</option>
+              <option>Yes</option>
+              <option>No</option>
+              <option>Not sure</option>
+            </select>
+          </div>
+          <div>
+            <label>Could anyone else claim any child?</label>
+            <select id="d_else_claim">
+              <option value="">Select…</option>
+              <option>No</option>
+              <option>Yes</option>
+              <option>Not sure</option>
+            </select>
+          </div>
+          <div>
+            <label>Do you pay more than half household costs?</label>
+            <select id="d_house_costs">
+              <option value="">Select…</option>
+              <option>Yes</option>
+              <option>No</option>
+              <option>Not sure</option>
+            </select>
+          </div>
+          <div>
+            <label>Any missing dependent IDs?</label>
+            <select id="d_missing_ids">
+              <option value="">Select…</option>
+              <option>No</option>
+              <option>Yes</option>
+              <option>Not sure</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="row">
+          <div>
+            <label>Documents reviewed / requested</label>
+            <textarea id="d_docs" placeholder="IDs, birth certificates, school letter, medical record, lease, utilities, custody papers…"></textarea>
+          </div>
+          <div>
+            <label>Preparer verification notes (how you verified)</label>
+            <textarea id="d_notes" placeholder="What you asked, what docs support residency/relationship/support, inconsistencies…"></textarea>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <label>Auto-flags (generated)</label>
+        <div id="flagBox" class="small">—</div>
+      </section>
+
+      <!-- FILES -->
+      <section id="mtab-files" style="display:none">
+        <div class="row">
+          <div>
+            <label>Upload files (stored locally)</label>
+            <input id="fileInput" type="file" multiple />
+            <div class="small" style="margin-top:8px">
+              Supported: PDFs, images, docs. Saved inside your browser (IndexedDB).
+            </div>
+          </div>
+          <div>
+            <label>Quick doc checklist</label>
+            <div class="small">
+              <div class="pill"><span>ID</span></div>
+              <div class="pill"><span>Birth Cert</span></div>
+              <div class="pill"><span>School Letter</span></div>
+              <div class="pill"><span>Lease</span></div>
+              <div class="pill"><span>Utilities</span></div>
+              <div class="pill"><span>W-2/1099</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <h3 style="margin:0 0 6px">Attached files</h3>
+        <div id="fileList" class="filelist"></div>
+      </section>
+
+      <!-- PRINT -->
+      <section id="mtab-print" style="display:none">
+        <div class="row">
+          <div>
+            <button class="primary" id="btnBuildPacket">Generate Packet Preview</button>
+            <button class="primary" id="btnPrintFromModal" style="margin-left:10px">Print Packet</button>
+            <div class="small" style="margin-top:8px">Generate preview first, then click Print Packet to print/save PDF.</div>
+          </div>
+          <div>
+            <div class="pill"><span>Packet status:</span> <b id="packetStatus">Not generated</b></div>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div id="packetPreview" class="small">Generate a packet to preview here.</div>
+      </section>
+
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

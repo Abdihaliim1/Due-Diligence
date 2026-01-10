@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>ASAL Solutions LTD — Tax Due Diligence</title>
+  <title>ASAL Solutions LTD — Tax Due Diligence (IRS 2025)</title>
   <link rel="icon" href="assets/app-icon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -17,7 +17,8 @@
           <div class="meta">
             3185 Morse Rd Ste 15, Columbus, Ohio 43231 • Preparer: Abdihaliim Ali<br/>
             Phone: 615-638-2490 • Email: 1@asal.llc<br/>
-            Offline-first • Sort/search • File uploads • Print packet • Backups
+            <span class="badge ok" style="margin-top:4px">IRS 2025 Compliant</span>
+            <span class="badge" style="margin-top:4px">Form 8867</span>
           </div>
         </div>
       </div>
@@ -41,67 +42,289 @@
 
     <!-- DASHBOARD -->
     <section class="card" id="tab-dashboard">
-      <h2>Today’s View</h2>
-
-      <div class="row">
-        <div>
-          <label>Search</label>
-          <input id="globalSearch" placeholder="Search clients, dependents, notes…" />
-        </div>
-        <div>
-          <label>Quick filters</label>
-          <select id="quickFilter">
-            <option value="all">All</option>
-            <option value="needs_docs">Needs documents</option>
-            <option value="ready_print">Ready to print</option>
-            <option value="has_dependents">Has dependents</option>
-            <option value="self_employed">Self-employed</option>
-          </select>
+      <!-- Tax Year Banner -->
+      <div class="dashboard-header">
+        <div class="tax-year-banner">
+          <div>
+            <div class="year">Tax Season 2025</div>
+            <div class="info">IRS Form 8867 Due Diligence Compliant</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:11px;opacity:0.9">Penalty: $635/failure</div>
+            <div style="font-size:10px;opacity:0.7">Document retention: 3 years</div>
+          </div>
         </div>
       </div>
 
-      <div class="kpis">
-        <div class="kpi">
-          <div class="t">Total clients</div>
-          <div class="v" id="kpiClients">0</div>
+      <!-- Search and Filters Row -->
+      <div class="dashboard-search-row">
+        <div class="search-box">
+          <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+          </svg>
+          <input id="globalSearch" placeholder="Search clients, dependents, notes…" />
         </div>
-        <div class="kpi">
-          <div class="t">Open cases (draft)</div>
-          <div class="v" id="kpiDrafts">0</div>
+        <div class="filter-pills">
+          <button class="filter-pill active" data-filter="all">All</button>
+          <button class="filter-pill" data-filter="needs_docs">Needs Docs</button>
+          <button class="filter-pill" data-filter="ready_print">Ready</button>
+          <button class="filter-pill" data-filter="has_dependents">With Dependents</button>
+          <button class="filter-pill" data-filter="self_employed">Self-Employed</button>
         </div>
-        <div class="kpi">
-          <div class="t">Needs documents</div>
-          <div class="v" id="kpiNeedsDocs">0</div>
+        <select id="quickFilter" style="display:none">
+          <option value="all">All</option>
+          <option value="needs_docs">Needs documents</option>
+          <option value="ready_print">Ready to print</option>
+          <option value="has_dependents">Has dependents</option>
+          <option value="self_employed">Self-employed</option>
+        </select>
+      </div>
+
+      <!-- KPI Cards -->
+      <div class="kpi-grid">
+        <div class="kpi-card kpi-total">
+          <div class="kpi-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+          </div>
+          <div class="kpi-content">
+            <div class="kpi-value" id="kpiClients">0</div>
+            <div class="kpi-label">Total Clients</div>
+          </div>
+          <div class="kpi-trend" id="kpiClientsTrend"></div>
         </div>
-        <div class="kpi">
-          <div class="t">Files stored locally</div>
-          <div class="v" id="kpiFiles">0</div>
+
+        <div class="kpi-card kpi-ready">
+          <div class="kpi-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22,4 12,14.01 9,11.01"></polyline>
+            </svg>
+          </div>
+          <div class="kpi-content">
+            <div class="kpi-value" id="kpiReady">0</div>
+            <div class="kpi-label">Ready to File</div>
+          </div>
+          <div class="kpi-progress">
+            <div class="kpi-progress-bar" id="kpiReadyBar" style="width:0%"></div>
+          </div>
+        </div>
+
+        <div class="kpi-card kpi-drafts">
+          <div class="kpi-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+          </div>
+          <div class="kpi-content">
+            <div class="kpi-value" id="kpiDrafts">0</div>
+            <div class="kpi-label">In Progress</div>
+          </div>
+        </div>
+
+        <div class="kpi-card kpi-docs">
+          <div class="kpi-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14,2 14,8 20,8"></polyline>
+              <line x1="12" y1="18" x2="12" y2="12"></line>
+              <line x1="9" y1="15" x2="15" y2="15"></line>
+            </svg>
+          </div>
+          <div class="kpi-content">
+            <div class="kpi-value" id="kpiNeedsDocs">0</div>
+            <div class="kpi-label">Needs Documents</div>
+          </div>
+        </div>
+
+        <div class="kpi-card kpi-files">
+          <div class="kpi-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17,8 12,3 7,8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+          </div>
+          <div class="kpi-content">
+            <div class="kpi-value" id="kpiFiles">0</div>
+            <div class="kpi-label">Files Stored</div>
+          </div>
+        </div>
+
+        <div class="kpi-card kpi-credits">
+          <div class="kpi-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="1" x2="12" y2="23"></line>
+              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+            </svg>
+          </div>
+          <div class="kpi-content">
+            <div class="kpi-value" id="kpiCredits">0</div>
+            <div class="kpi-label">Credits Claimed</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Credits Breakdown -->
+      <div class="credits-breakdown">
+        <h3 style="margin:0 0 12px;font-size:14px;font-weight:700">Credits Overview</h3>
+        <div class="credits-stats">
+          <div class="credit-stat">
+            <div class="credit-stat-bar eitc">
+              <div class="credit-stat-fill" id="creditEitcBar" style="width:0%"></div>
+            </div>
+            <div class="credit-stat-info">
+              <span class="credit-stat-label">EITC</span>
+              <span class="credit-stat-value" id="creditEitc">0</span>
+            </div>
+          </div>
+          <div class="credit-stat">
+            <div class="credit-stat-bar ctc">
+              <div class="credit-stat-fill" id="creditCtcBar" style="width:0%"></div>
+            </div>
+            <div class="credit-stat-info">
+              <span class="credit-stat-label">CTC/ACTC</span>
+              <span class="credit-stat-value" id="creditCtc">0</span>
+            </div>
+          </div>
+          <div class="credit-stat">
+            <div class="credit-stat-bar aotc">
+              <div class="credit-stat-fill" id="creditAotcBar" style="width:0%"></div>
+            </div>
+            <div class="credit-stat-info">
+              <span class="credit-stat-label">AOTC</span>
+              <span class="credit-stat-value" id="creditAotc">0</span>
+            </div>
+          </div>
+          <div class="credit-stat">
+            <div class="credit-stat-bar hoh">
+              <div class="credit-stat-fill" id="creditHohBar" style="width:0%"></div>
+            </div>
+            <div class="credit-stat-info">
+              <span class="credit-stat-label">HOH</span>
+              <span class="credit-stat-value" id="creditHoh">0</span>
+            </div>
+          </div>
         </div>
       </div>
 
       <div class="divider"></div>
 
-      <div class="row">
-        <div class="card" style="box-shadow:none">
-          <h3>Smart checklist</h3>
-          <div class="small">This is the “crazy big” part—extra tools you might not always need, but they’re here.</div>
-          <div class="divider"></div>
-          <div class="small">
-            ✅ Auto-flag common red flags (missing SSNs, unclear residency, “not sure” answers)<br/>
-            ✅ Document checklist per client (ID, birth cert, school letter, lease, utilities, W-2/1099s)<br/>
-            ✅ “Explain how verified” notes (protects preparer)<br/>
-            ✅ Client attestation + signature lines<br/>
-            ✅ Attachments stored offline (IDs, letters, PDFs)<br/>
-            ✅ Export/import database backups (JSON)
+      <!-- Two Column Layout -->
+      <div class="dashboard-grid">
+        <!-- Recent Clients -->
+        <div class="dashboard-section">
+          <div class="section-header">
+            <h3>Recent Clients</h3>
+            <a href="#" class="section-link" onclick="document.querySelector('[data-tab=clients]').click(); return false;">View all</a>
           </div>
+          <div id="recentList" class="recent-clients-list">Loading…</div>
         </div>
 
-        <div class="card" style="box-shadow:none">
-          <h3>Recent clients</h3>
-          <div class="small">Click to open and continue.</div>
+        <!-- Quick Actions & Status -->
+        <div class="dashboard-section">
+          <div class="section-header">
+            <h3>Quick Actions</h3>
+          </div>
+          <div class="quick-actions">
+            <button class="quick-action-btn primary" onclick="document.getElementById('btnNew').click()">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              <span>New Client</span>
+            </button>
+            <button class="quick-action-btn" onclick="document.getElementById('btnQuickBackup').click()">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7,10 12,15 17,10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              <span>Backup Data</span>
+            </button>
+          </div>
+
           <div class="divider"></div>
-          <div id="recentList" class="small">Loading…</div>
+
+          <div class="section-header">
+            <h3>Due Diligence Checklist</h3>
+          </div>
+          <div class="checklist-items">
+            <div class="checklist-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="3">
+                <polyline points="20,6 9,17 4,12"></polyline>
+              </svg>
+              <span>IRS Form 8867 Questions (Parts I-V)</span>
+            </div>
+            <div class="checklist-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="3">
+                <polyline points="20,6 9,17 4,12"></polyline>
+              </svg>
+              <span>Document verification with tick boxes</span>
+            </div>
+            <div class="checklist-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="3">
+                <polyline points="20,6 9,17 4,12"></polyline>
+              </svg>
+              <span>Knowledge-based interview questions</span>
+            </div>
+            <div class="checklist-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="3">
+                <polyline points="20,6 9,17 4,12"></polyline>
+              </svg>
+              <span>Auto-flag red flags & missing info</span>
+            </div>
+            <div class="checklist-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="3">
+                <polyline points="20,6 9,17 4,12"></polyline>
+              </svg>
+              <span>Preparer certification section</span>
+            </div>
+            <div class="checklist-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="3">
+                <polyline points="20,6 9,17 4,12"></polyline>
+              </svg>
+              <span>Print-ready compliance packet</span>
+            </div>
+          </div>
+          <div class="diligence-summary" aria-live="polite">
+            <h3>Due Diligence Health</h3>
+            <div class="diligence-metric">
+              <div class="diligence-metric-label">
+                <span>Document verification coverage</span>
+                <span id="docCoverageValue">0% verified</span>
+              </div>
+              <div class="diligence-progress">
+                <div class="diligence-progress-bar" id="docCoverageBar"></div>
+              </div>
+              <div class="diligence-metric-meta" id="docMissingClients">No clients yet</div>
+            </div>
+            <div class="diligence-metric">
+              <div class="diligence-metric-label">
+                <span>Knowledge interview ticks</span>
+                <span id="interviewCoverageValue">0% complete</span>
+              </div>
+              <div class="diligence-progress">
+                <div class="diligence-progress-bar" id="interviewCoverageBar"></div>
+              </div>
+              <div class="diligence-metric-meta" id="interviewMissingClients">No interviews logged yet</div>
+            </div>
+          </div>
         </div>
+      </div>
+
+      <!-- Alerts Section -->
+      <div class="dashboard-alerts" id="dashboardAlerts" style="display:none">
+        <div class="section-header">
+          <h3>Attention Required</h3>
+        </div>
+        <div id="alertsList" class="alerts-list"></div>
       </div>
     </section>
 
@@ -311,8 +534,26 @@
             <input id="f_ssn" placeholder="1234" />
           </div>
           <div>
+            <label>SSN valid for employment? <span class="badge warn" style="font-size:9px">Required for EITC/CTC</span></label>
+            <select id="f_ssn_valid">
+              <option value="">Select…</option>
+              <option value="Yes">Yes - Valid for employment</option>
+              <option value="No">No - Not valid for employment</option>
+              <option value="ITIN">ITIN (not valid for EITC/CTC)</option>
+            </select>
+          </div>
+          <div>
             <label>Date of birth</label>
             <input id="f_dob" type="date" />
+          </div>
+          <div>
+            <label>Citizenship/Residency Status</label>
+            <select id="f_citizenship">
+              <option value="">Select…</option>
+              <option value="US Citizen">US Citizen</option>
+              <option value="Resident Alien">Resident Alien</option>
+              <option value="Non-Resident Alien">Non-Resident Alien</option>
+            </select>
           </div>
           <div>
             <label>Filing status intent</label>
@@ -325,6 +566,36 @@
               <option>Qualifying Surviving Spouse</option>
             </select>
           </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <h3 style="margin:0 0 10px">Credits Being Claimed (Select all that apply)</h3>
+        <div class="credits-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+          <label class="credit-checkbox">
+            <input type="checkbox" id="credit_eitc" />
+            <span>EITC (Earned Income Tax Credit)</span>
+          </label>
+          <label class="credit-checkbox">
+            <input type="checkbox" id="credit_ctc" />
+            <span>CTC (Child Tax Credit)</span>
+          </label>
+          <label class="credit-checkbox">
+            <input type="checkbox" id="credit_actc" />
+            <span>ACTC (Additional Child Tax Credit)</span>
+          </label>
+          <label class="credit-checkbox">
+            <input type="checkbox" id="credit_odc" />
+            <span>ODC (Other Dependents Credit)</span>
+          </label>
+          <label class="credit-checkbox">
+            <input type="checkbox" id="credit_aotc" />
+            <span>AOTC (American Opportunity Credit)</span>
+          </label>
+          <label class="credit-checkbox">
+            <input type="checkbox" id="credit_hoh" />
+            <span>HOH (Head of Household Status)</span>
+          </label>
         </div>
 
         <div class="divider"></div>
@@ -343,13 +614,18 @@
             </select>
           </div>
           <div>
+            <label>Prior address (if moved)</label>
+            <input id="f_prior_address" placeholder="Previous address if moved in last 12 months" />
+          </div>
+          <div>
             <label>Photo ID type</label>
             <select id="f_idtype">
               <option value="">Select…</option>
-              <option>Driver’s License</option>
+              <option>Driver's License</option>
               <option>State ID</option>
               <option>Passport</option>
-              <option>Other</option>
+              <option>Military ID</option>
+              <option>Other Government ID</option>
             </select>
           </div>
           <div>
@@ -418,67 +694,568 @@
         </div>
       </section>
 
-      <!-- DDQ -->
+      <!-- DDQ - IRS 2025 Form 8867 Compliant -->
       <section id="mtab-ddq" style="display:none">
-        <div class="row">
-          <div>
-            <label>Did any child live with you more than half the year?</label>
-            <select id="d_child_half">
-              <option value="">Select…</option>
-              <option>Yes</option>
-              <option>No</option>
-              <option>Not sure</option>
-            </select>
-          </div>
-          <div>
-            <label>Could anyone else claim any child?</label>
-            <select id="d_else_claim">
-              <option value="">Select…</option>
-              <option>No</option>
-              <option>Yes</option>
-              <option>Not sure</option>
-            </select>
-          </div>
-          <div>
-            <label>Do you pay more than half household costs?</label>
-            <select id="d_house_costs">
-              <option value="">Select…</option>
-              <option>Yes</option>
-              <option>No</option>
-              <option>Not sure</option>
-            </select>
-          </div>
-          <div>
-            <label>Any missing dependent IDs?</label>
-            <select id="d_missing_ids">
-              <option value="">Select…</option>
-              <option>No</option>
-              <option>Yes</option>
-              <option>Not sure</option>
-            </select>
+        <div class="ddq-header" style="background:#f0f9ff;border:1px solid #0ea5e9;border-radius:12px;padding:12px;margin-bottom:14px">
+          <h3 style="margin:0 0 6px;color:#0369a1">IRS Form 8867 - Paid Preparer's Due Diligence Checklist</h3>
+          <div class="small" style="color:#0369a1">Tax Year 2025 • EITC/CTC/ACTC/ODC/AOTC/HOH • Penalty: $635 per failure</div>
+        </div>
+
+        <!-- Part I: Due Diligence Requirements (All Credits) -->
+        <div class="ddq-section">
+          <h4 style="margin:0 0 10px;padding:8px;background:#e0e7ff;border-radius:8px">Part I: Due Diligence Requirements (All Credits)</h4>
+          <div class="row">
+            <div>
+              <label>Line 2: Did you complete applicable worksheets for each credit?</label>
+              <select id="d_completed_worksheets">
+                <option value="">Select…</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+                <option value="N/A">N/A</option>
+              </select>
+            </div>
+            <div>
+              <label>Line 3: Does any information appear incorrect or inconsistent?</label>
+              <select id="d_info_incorrect">
+                <option value="">Select…</option>
+                <option value="No">No - All information appears correct</option>
+                <option value="Yes">Yes - Issues identified (see notes)</option>
+              </select>
+            </div>
+            <div>
+              <label>Line 4: Did you make reasonable inquiries to verify eligibility?</label>
+              <select id="d_reasonable_inquiries">
+                <option value="">Select…</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+              </select>
+            </div>
+            <div>
+              <label>Line 5: Did you document inquiries and taxpayer responses?</label>
+              <select id="d_documented_inquiries">
+                <option value="">Select…</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+              </select>
+            </div>
+            <div>
+              <label>Line 6: Did you advise taxpayer IRS may request documentation?</label>
+              <select id="d_advised_irs">
+                <option value="">Select…</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+              </select>
+            </div>
+            <div>
+              <label>Line 7: Was credit previously denied (Form 8862 required)?</label>
+              <select id="d_form_8862_required">
+                <option value="">Select…</option>
+                <option value="No">No - Not previously denied</option>
+                <option value="Yes">Yes - Form 8862 required</option>
+              </select>
+            </div>
+            <div>
+              <label>If Form 8862 required, is it attached?</label>
+              <select id="d_form_8862_attached">
+                <option value="">Select…</option>
+                <option value="Yes">Yes - Form 8862 attached</option>
+                <option value="No">No - Not yet attached</option>
+                <option value="N/A">N/A</option>
+              </select>
+            </div>
+            <div>
+              <label>Line 8: Is Schedule C required (self-employment)?</label>
+              <select id="d_schedule_c_required">
+                <option value="">Select…</option>
+                <option value="No">No</option>
+                <option value="Yes">Yes - Schedule C required</option>
+              </select>
+            </div>
           </div>
         </div>
 
         <div class="divider"></div>
 
-        <div class="row">
-          <div>
-            <label>Documents reviewed / requested</label>
-            <textarea id="d_docs" placeholder="IDs, birth certificates, school letter, medical record, lease, utilities, custody papers…"></textarea>
-          </div>
-          <div>
-            <label>Preparer verification notes (how you verified)</label>
-            <textarea id="d_notes" placeholder="What you asked, what docs support residency/relationship/support, inconsistencies…"></textarea>
+        <!-- Part II: EITC Questions -->
+        <div class="ddq-section" id="ddq_eitc_section">
+          <h4 style="margin:0 0 10px;padding:8px;background:#dcfce7;border-radius:8px">Part II: Earned Income Credit (EITC) - Form 8867 Line 9</h4>
+          <div class="row">
+            <div>
+              <label>Is taxpayer eligible for EITC?</label>
+              <select id="d_eitc_eligible">
+                <option value="">Select…</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+              </select>
+            </div>
+            <div>
+              <label>Line 9a: Is there a qualifying child for EITC?</label>
+              <select id="d_eitc_qualifying_child">
+                <option value="">Select…</option>
+                <option value="Yes">Yes - Qualifying child claimed</option>
+                <option value="No">No - EITC without qualifying child</option>
+              </select>
+            </div>
+            <div>
+              <label>Line 9c: Do tiebreaker rules apply?</label>
+              <select id="d_eitc_tiebreaker">
+                <option value="">Select…</option>
+                <option value="No">No - No tiebreaker needed</option>
+                <option value="Yes">Yes - Tiebreaker resolved in favor</option>
+                <option value="Pending">Pending - Needs resolution</option>
+              </select>
+            </div>
+            <div>
+              <label>Age requirement met? (25-65 if no child)</label>
+              <select id="d_eitc_age_met">
+                <option value="">Select…</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+                <option value="N/A">N/A - Has qualifying child</option>
+              </select>
+            </div>
+            <div>
+              <label>Residency verified (child lived with taxpayer &gt;6 months)?</label>
+              <select id="d_eitc_residency">
+                <option value="">Select…</option>
+                <option value="Yes">Yes - Verified</option>
+                <option value="No">No - Not verified</option>
+                <option value="N/A">N/A</option>
+              </select>
+            </div>
+            <div>
+              <label>Relationship to taxpayer verified?</label>
+              <select id="d_eitc_relationship">
+                <option value="">Select…</option>
+                <option value="Yes">Yes - Verified</option>
+                <option value="No">No - Not verified</option>
+                <option value="N/A">N/A</option>
+              </select>
+            </div>
           </div>
         </div>
 
         <div class="divider"></div>
 
-        <label>Auto-flags (generated)</label>
+        <!-- Part III: CTC/ACTC/ODC Questions -->
+        <div class="ddq-section" id="ddq_ctc_section">
+          <h4 style="margin:0 0 10px;padding:8px;background:#fef3c7;border-radius:8px">Part III: Child Tax Credit / Additional Child Tax Credit / ODC - Lines 10-12</h4>
+          <div class="row">
+            <div>
+              <label>Is there a qualifying child for CTC?</label>
+              <select id="d_ctc_qualifying_child">
+                <option value="">Select…</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+              </select>
+            </div>
+            <div>
+              <label>Child age verified (under 17 at end of year)?</label>
+              <select id="d_ctc_age_verified">
+                <option value="">Select…</option>
+                <option value="Yes">Yes - Under 17</option>
+                <option value="No">No - 17 or older (ODC only)</option>
+              </select>
+            </div>
+            <div>
+              <label>Child SSN valid for employment?</label>
+              <select id="d_ctc_ssn_valid">
+                <option value="">Select…</option>
+                <option value="Yes">Yes - Valid for employment</option>
+                <option value="No">No - Not valid</option>
+              </select>
+            </div>
+            <div>
+              <label>Child US citizen/national/resident?</label>
+              <select id="d_ctc_citizenship">
+                <option value="">Select…</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+              </select>
+            </div>
+            <div>
+              <label>Child residency verified (&gt;6 months)?</label>
+              <select id="d_ctc_residency">
+                <option value="">Select…</option>
+                <option value="Yes">Yes - Verified</option>
+                <option value="No">No - Not verified</option>
+              </select>
+            </div>
+            <div>
+              <label>Support test met (child didn't provide &gt;50%)?</label>
+              <select id="d_ctc_support">
+                <option value="">Select…</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+              </select>
+            </div>
+            <div>
+              <label>Line 12: Does Form 8332 apply (divorced/separated)?</label>
+              <select id="d_form_8332_applies">
+                <option value="">Select…</option>
+                <option value="No">No - Not applicable</option>
+                <option value="Yes">Yes - Form 8332 required</option>
+              </select>
+            </div>
+            <div>
+              <label>If Form 8332 applies, is it attached?</label>
+              <select id="d_form_8332_attached">
+                <option value="">Select…</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+                <option value="N/A">N/A</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Part IV: AOTC Questions -->
+        <div class="ddq-section" id="ddq_aotc_section">
+          <h4 style="margin:0 0 10px;padding:8px;background:#fce7f3;border-radius:8px">Part IV: American Opportunity Tax Credit (AOTC) - Line 13</h4>
+          <div class="row">
+            <div>
+              <label>Line 13: Is student eligible for AOTC?</label>
+              <select id="d_aotc_eligible">
+                <option value="">Select…</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+                <option value="N/A">N/A - Not claiming AOTC</option>
+              </select>
+            </div>
+            <div>
+              <label>First 4 years of post-secondary education?</label>
+              <select id="d_aotc_first_4_years">
+                <option value="">Select…</option>
+                <option value="Yes">Yes - First 4 years</option>
+                <option value="No">No - Already claimed 4 years</option>
+                <option value="N/A">N/A</option>
+              </select>
+            </div>
+            <div>
+              <label>Enrolled at least half-time?</label>
+              <select id="d_aotc_enrollment">
+                <option value="">Select…</option>
+                <option value="Yes">Yes - Half-time or more</option>
+                <option value="No">No</option>
+                <option value="N/A">N/A</option>
+              </select>
+            </div>
+            <div>
+              <label>Felony drug conviction at end of tax year?</label>
+              <select id="d_aotc_felony">
+                <option value="">Select…</option>
+                <option value="No">No</option>
+                <option value="Yes">Yes - Disqualified</option>
+                <option value="N/A">N/A</option>
+              </select>
+            </div>
+            <div>
+              <label>Qualified expenses verified?</label>
+              <select id="d_aotc_expenses">
+                <option value="">Select…</option>
+                <option value="Yes">Yes - Verified</option>
+                <option value="No">No</option>
+                <option value="N/A">N/A</option>
+              </select>
+            </div>
+            <div>
+              <label>Form 1098-T received?</label>
+              <select id="d_aotc_1098t">
+                <option value="">Select…</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+                <option value="N/A">N/A</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Part V: HOH Questions -->
+        <div class="ddq-section" id="ddq_hoh_section">
+          <h4 style="margin:0 0 10px;padding:8px;background:#e0e7ff;border-radius:8px">Part V: Head of Household (HOH) Filing Status - Line 14</h4>
+          <div class="row">
+            <div>
+              <label>Line 14: Is taxpayer unmarried or considered unmarried?</label>
+              <select id="d_hoh_unmarried">
+                <option value="">Select…</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+                <option value="N/A">N/A - Not claiming HOH</option>
+              </select>
+            </div>
+            <div>
+              <label>Is there a qualifying person for HOH?</label>
+              <select id="d_hoh_qualifying_person">
+                <option value="">Select…</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+                <option value="N/A">N/A</option>
+              </select>
+            </div>
+            <div>
+              <label>Paid more than half of household costs?</label>
+              <select id="d_hoh_paid_half">
+                <option value="">Select…</option>
+                <option value="Yes">Yes - More than 50%</option>
+                <option value="No">No</option>
+                <option value="N/A">N/A</option>
+              </select>
+            </div>
+            <div>
+              <label>Qualifying person lived with taxpayer &gt;6 months?</label>
+              <select id="d_hoh_lived">
+                <option value="">Select…</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+                <option value="N/A">N/A</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Legacy Quick Questions (Backward Compatibility) -->
+        <div class="ddq-section" style="background:#f9fafb;padding:12px;border-radius:12px">
+          <h4 style="margin:0 0 10px">Quick Due Diligence Summary</h4>
+          <div class="row">
+            <div>
+              <label>Did any child live with you more than half the year?</label>
+              <select id="d_child_half">
+                <option value="">Select…</option>
+                <option>Yes</option>
+                <option>No</option>
+                <option>Not sure</option>
+              </select>
+            </div>
+            <div>
+              <label>Could anyone else claim any child?</label>
+              <select id="d_else_claim">
+                <option value="">Select…</option>
+                <option>No</option>
+                <option>Yes</option>
+                <option>Not sure</option>
+              </select>
+            </div>
+            <div>
+              <label>Do you pay more than half household costs?</label>
+              <select id="d_house_costs">
+                <option value="">Select…</option>
+                <option>Yes</option>
+                <option>No</option>
+                <option>Not sure</option>
+              </select>
+            </div>
+            <div>
+              <label>Any missing dependent IDs?</label>
+              <select id="d_missing_ids">
+                <option value="">Select…</option>
+                <option>No</option>
+                <option>Yes</option>
+                <option>Not sure</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Self-Employment Verification -->
+        <div class="ddq-section" id="ddq_self_emp_section">
+          <h4 style="margin:0 0 10px;padding:8px;background:#fef3c7;border-radius:8px">Self-Employment Verification (Form 8867 Line 8)</h4>
+          <div class="row">
+            <div>
+              <label>Self-employment income verified?</label>
+              <select id="d_self_emp_income">
+                <option value="">Select…</option>
+                <option value="Yes">Yes - Income records reviewed</option>
+                <option value="No">No</option>
+                <option value="N/A">N/A - Not self-employed</option>
+              </select>
+            </div>
+            <div>
+              <label>Self-employment expenses verified?</label>
+              <select id="d_self_emp_expenses">
+                <option value="">Select…</option>
+                <option value="Yes">Yes - Expense records reviewed</option>
+                <option value="No">No</option>
+                <option value="N/A">N/A</option>
+              </select>
+            </div>
+            <div>
+              <label>Records adequate to support Schedule C?</label>
+              <select id="d_self_emp_records">
+                <option value="">Select…</option>
+                <option value="Yes">Yes - Adequate records</option>
+                <option value="No">No - Insufficient records</option>
+                <option value="N/A">N/A</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Knowledge-Based Interview Questions -->
+        <div class="ddq-section">
+          <h4 style="margin:0 0 10px;padding:8px;background:#dbeafe;border-radius:8px">Knowledge-Based Interview (IRS Publication 4687)</h4>
+          <div class="small" style="margin-bottom:10px;color:#1e40af">Ask these questions to meet the knowledge requirement. Document actual responses.</div>
+          <div class="doc-tick-section">
+            <div class="doc-tick-section-heading">
+              <span>Document ticks sync with the Verification tab</span>
+            </div>
+            <div id="docTickSummary" class="doc-tick-summary"></div>
+          </div>
+
+          <div class="row">
+            <div>
+              <label>How are the children related to you?</label>
+              <textarea id="d_int_relation" placeholder="Document taxpayer's response: son, daughter, stepchild, foster child, etc."></textarea>
+              <label class="question-check">
+                <input type="checkbox" id="d_int_chk_relation" />
+                <span>Tick when asked</span>
+              </label>
+            </div>
+            <div>
+              <label>Where do the children attend school/daycare?</label>
+              <textarea id="d_int_school" placeholder="School names, addresses, or 'homeschooled', 'not school age', etc."></textarea>
+              <label class="question-check">
+                <input type="checkbox" id="d_int_chk_school" />
+                <span>Tick when asked</span>
+              </label>
+            </div>
+          </div>
+          <div class="row">
+            <div>
+              <label>Who provides childcare while you work?</label>
+              <textarea id="d_int_childcare" placeholder="Daycare name, family member, self-care if older child, etc."></textarea>
+              <label class="question-check">
+                <input type="checkbox" id="d_int_chk_childcare" />
+                <span>Tick when asked</span>
+              </label>
+            </div>
+            <div>
+              <label>Describe the custody situation</label>
+              <textarea id="d_int_custody" placeholder="Full custody, shared custody, court order details, etc."></textarea>
+              <label class="question-check">
+                <input type="checkbox" id="d_int_chk_custody" />
+                <span>Tick when asked</span>
+              </label>
+            </div>
+          </div>
+          <div class="row">
+            <div>
+              <label>Could the other parent claim any child?</label>
+              <textarea id="d_int_other_parent" placeholder="Explain: 'No, I have full custody' or 'We alternate years' etc."></textarea>
+              <label class="question-check">
+                <input type="checkbox" id="d_int_chk_other_parent" />
+                <span>Tick when asked</span>
+              </label>
+            </div>
+            <div>
+              <label>How do you receive your income?</label>
+              <textarea id="d_int_income" placeholder="Direct deposit, check, cash, payment apps, etc."></textarea>
+              <label class="question-check">
+                <input type="checkbox" id="d_int_chk_income" />
+                <span>Tick when asked</span>
+              </label>
+            </div>
+          </div>
+          <div class="row" id="self_emp_interview" style="display:none">
+            <div>
+              <label>Describe your business/self-employment</label>
+              <textarea id="d_int_business" placeholder="Type of work, typical customers, how you find work, etc."></textarea>
+              <label class="question-check">
+                <input type="checkbox" id="d_int_chk_business" />
+                <span>Tick when asked</span>
+              </label>
+            </div>
+            <div>
+              <label>How do you track income and expenses?</label>
+              <textarea id="d_int_tracking" placeholder="App, spreadsheet, receipts, bank statements, etc."></textarea>
+              <label class="question-check">
+                <input type="checkbox" id="d_int_chk_tracking" />
+                <span>Tick when asked</span>
+              </label>
+            </div>
+          </div>
+          <div class="row" id="education_interview" style="display:none">
+            <div>
+              <label>Name of educational institution</label>
+              <input id="d_int_edu_name" placeholder="College/university name" />
+              <label class="question-check">
+                <input type="checkbox" id="d_int_chk_edu_name" />
+                <span>Tick when asked</span>
+              </label>
+            </div>
+            <div>
+              <label>Program of study</label>
+              <input id="d_int_edu_program" placeholder="Degree program, major, certification, etc." />
+              <label class="question-check">
+                <input type="checkbox" id="d_int_chk_edu_program" />
+                <span>Tick when asked</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Documents Notes -->
+        <div class="row">
+          <div>
+            <label>Documents reviewed / requested (summary)</label>
+            <textarea id="d_docs" placeholder="List all documents: IDs, birth certificates, school letters, medical records, lease, utilities, custody papers, W-2s, 1099s…"></textarea>
+          </div>
+          <div>
+            <label>Preparer verification notes (how you verified each item)</label>
+            <textarea id="d_notes" placeholder="What you asked, what docs support residency/relationship/support, any inconsistencies noted and how resolved…"></textarea>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Preparer Certification -->
+        <div class="ddq-section" style="background:#f0fdf4;border:2px solid #22c55e;border-radius:12px;padding:14px">
+          <h4 style="margin:0 0 10px;color:#166534">Preparer Due Diligence Certification</h4>
+          <div class="row">
+            <div>
+              <label>I have met all due diligence requirements?</label>
+              <select id="d_preparer_satisfied">
+                <option value="">Select…</option>
+                <option value="Yes">Yes - All requirements met</option>
+                <option value="No">No - Requirements not complete</option>
+              </select>
+            </div>
+            <div>
+              <label>Knowledge requirement met (asked sufficient questions)?</label>
+              <select id="d_knowledge_met">
+                <option value="">Select…</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+              </select>
+            </div>
+            <div>
+              <label>Certification date</label>
+              <input id="d_cert_date" type="date" />
+            </div>
+          </div>
+          <div class="small" style="margin-top:10px;color:#166534">
+            <b>Penalty Warning:</b> Failure to meet due diligence requirements may result in a $635 penalty per credit/status for returns filed in 2025.
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <label>Auto-flags (generated based on responses)</label>
         <div id="flagBox" class="small">—</div>
       </section>
 
-      <!-- FILES -->
+      <!-- FILES - Document Verification with Tick Boxes -->
       <section id="mtab-files" style="display:none">
         <div class="row">
           <div>
@@ -489,20 +1266,183 @@
             </div>
           </div>
           <div>
-            <label>Quick doc checklist</label>
-            <div class="small">
-              <div class="pill"><span>ID</span></div>
-              <div class="pill"><span>Birth Cert</span></div>
-              <div class="pill"><span>School Letter</span></div>
-              <div class="pill"><span>Lease</span></div>
-              <div class="pill"><span>Utilities</span></div>
-              <div class="pill"><span>W-2/1099</span></div>
+            <label>Document Verification Status</label>
+            <div id="docVerificationSummary" class="small">
+              <div class="pill"><span>Verified:</span> <b id="verifiedCount">0</b></div>
+              <div class="pill"><span>Required:</span> <b id="requiredCount">0</b></div>
+              <div class="pill"><span>Pending:</span> <b id="pendingCount">0</b></div>
             </div>
           </div>
         </div>
 
         <div class="divider"></div>
-        <h3 style="margin:0 0 6px">Attached files</h3>
+
+        <!-- Document Verification Checklist with Tick Boxes -->
+        <h3 style="margin:0 0 10px">Document Verification Checklist</h3>
+        <div class="small" style="margin-bottom:14px;color:#6b7280">Check each document as you verify it. Required documents are marked with <span class="badge warn" style="font-size:9px">Required</span></div>
+
+        <!-- Identity Documents -->
+        <div class="doc-category" style="background:#f9fafb;border-radius:12px;padding:12px;margin-bottom:12px">
+          <h4 style="margin:0 0 10px;display:flex;align-items:center;gap:8px">
+            <span style="width:24px;height:24px;background:#3b82f6;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px">1</span>
+            Identity Documents
+          </h4>
+          <div class="doc-list" style="display:grid;gap:8px">
+            <label class="doc-item">
+              <input type="checkbox" id="doc_photo_id" class="doc-check" data-category="identity" />
+              <span class="doc-label">Valid Photo ID (Driver's License/State ID/Passport)</span>
+              <span class="badge warn" style="font-size:9px">Required</span>
+            </label>
+            <label class="doc-item">
+              <input type="checkbox" id="doc_ssn_card" class="doc-check" data-category="identity" />
+              <span class="doc-label">Social Security Card</span>
+              <span class="badge warn" style="font-size:9px">Required</span>
+            </label>
+            <label class="doc-item">
+              <input type="checkbox" id="doc_itin_letter" class="doc-check" data-category="identity" />
+              <span class="doc-label">ITIN Letter (if applicable)</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Residency Documents -->
+        <div class="doc-category" style="background:#f9fafb;border-radius:12px;padding:12px;margin-bottom:12px">
+          <h4 style="margin:0 0 10px;display:flex;align-items:center;gap:8px">
+            <span style="width:24px;height:24px;background:#10b981;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px">2</span>
+            Residency Documents
+          </h4>
+          <div class="doc-list" style="display:grid;gap:8px">
+            <label class="doc-item">
+              <input type="checkbox" id="doc_lease_deed" class="doc-check" data-category="residency" />
+              <span class="doc-label">Lease Agreement or Property Deed</span>
+              <span class="badge warn" style="font-size:9px">Required</span>
+            </label>
+            <label class="doc-item">
+              <input type="checkbox" id="doc_utility_bill" class="doc-check" data-category="residency" />
+              <span class="doc-label">Utility Bills (electric, gas, water)</span>
+              <span class="badge warn" style="font-size:9px">Required</span>
+            </label>
+            <label class="doc-item">
+              <input type="checkbox" id="doc_bank_statement" class="doc-check" data-category="residency" />
+              <span class="doc-label">Bank Statement with Current Address</span>
+            </label>
+            <label class="doc-item">
+              <input type="checkbox" id="doc_mail" class="doc-check" data-category="residency" />
+              <span class="doc-label">Official Mail/Government Correspondence</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Income Documents -->
+        <div class="doc-category" style="background:#f9fafb;border-radius:12px;padding:12px;margin-bottom:12px">
+          <h4 style="margin:0 0 10px;display:flex;align-items:center;gap:8px">
+            <span style="width:24px;height:24px;background:#f59e0b;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px">3</span>
+            Income Documents
+          </h4>
+          <div class="doc-list" style="display:grid;gap:8px">
+            <label class="doc-item">
+              <input type="checkbox" id="doc_w2_forms" class="doc-check" data-category="income" />
+              <span class="doc-label">W-2 Forms (all employers)</span>
+              <span class="badge warn" style="font-size:9px">Required</span>
+            </label>
+            <label class="doc-item">
+              <input type="checkbox" id="doc_1099_forms" class="doc-check" data-category="income" />
+              <span class="doc-label">1099 Forms (NEC, MISC, K, G)</span>
+            </label>
+            <label class="doc-item">
+              <input type="checkbox" id="doc_self_emp_records" class="doc-check" data-category="income" />
+              <span class="doc-label">Self-Employment Income Records</span>
+            </label>
+            <label class="doc-item">
+              <input type="checkbox" id="doc_bank_deposits" class="doc-check" data-category="income" />
+              <span class="doc-label">Bank Statements (income verification)</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Dependent Documents -->
+        <div class="doc-category" style="background:#f9fafb;border-radius:12px;padding:12px;margin-bottom:12px">
+          <h4 style="margin:0 0 10px;display:flex;align-items:center;gap:8px">
+            <span style="width:24px;height:24px;background:#8b5cf6;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px">4</span>
+            Dependent Documents
+          </h4>
+          <div class="doc-list" style="display:grid;gap:8px">
+            <label class="doc-item">
+              <input type="checkbox" id="doc_birth_cert" class="doc-check" data-category="dependents" />
+              <span class="doc-label">Birth Certificate(s)</span>
+              <span class="badge warn" style="font-size:9px">Required</span>
+            </label>
+            <label class="doc-item">
+              <input type="checkbox" id="doc_dep_ssn_card" class="doc-check" data-category="dependents" />
+              <span class="doc-label">Dependent's Social Security Card(s)</span>
+              <span class="badge warn" style="font-size:9px">Required</span>
+            </label>
+            <label class="doc-item">
+              <input type="checkbox" id="doc_school_records" class="doc-check" data-category="dependents" />
+              <span class="doc-label">School Enrollment Letter/Records</span>
+              <span class="badge warn" style="font-size:9px">Required</span>
+            </label>
+            <label class="doc-item">
+              <input type="checkbox" id="doc_medical_records" class="doc-check" data-category="dependents" />
+              <span class="doc-label">Medical Records with Address</span>
+            </label>
+            <label class="doc-item">
+              <input type="checkbox" id="doc_childcare_records" class="doc-check" data-category="dependents" />
+              <span class="doc-label">Childcare Provider Statement</span>
+            </label>
+            <label class="doc-item">
+              <input type="checkbox" id="doc_custody_docs" class="doc-check" data-category="dependents" />
+              <span class="doc-label">Custody Agreement/Court Order</span>
+            </label>
+            <label class="doc-item">
+              <input type="checkbox" id="doc_form_8332" class="doc-check" data-category="dependents" />
+              <span class="doc-label">Form 8332 (Release of Claim to Exemption)</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Education Documents (AOTC) -->
+        <div class="doc-category" id="education_docs_section" style="background:#f9fafb;border-radius:12px;padding:12px;margin-bottom:12px">
+          <h4 style="margin:0 0 10px;display:flex;align-items:center;gap:8px">
+            <span style="width:24px;height:24px;background:#ec4899;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px">5</span>
+            Education Documents (AOTC)
+          </h4>
+          <div class="doc-list" style="display:grid;gap:8px">
+            <label class="doc-item">
+              <input type="checkbox" id="doc_form_1098t" class="doc-check" data-category="education" />
+              <span class="doc-label">Form 1098-T (Tuition Statement)</span>
+            </label>
+            <label class="doc-item">
+              <input type="checkbox" id="doc_tuition_receipts" class="doc-check" data-category="education" />
+              <span class="doc-label">Tuition Payment Receipts</span>
+            </label>
+            <label class="doc-item">
+              <input type="checkbox" id="doc_enrollment_letter" class="doc-check" data-category="education" />
+              <span class="doc-label">Enrollment Verification Letter</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- HOH Documents -->
+        <div class="doc-category" id="hoh_docs_section" style="background:#f9fafb;border-radius:12px;padding:12px;margin-bottom:12px">
+          <h4 style="margin:0 0 10px;display:flex;align-items:center;gap:8px">
+            <span style="width:24px;height:24px;background:#6366f1;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px">6</span>
+            Head of Household Documents
+          </h4>
+          <div class="doc-list" style="display:grid;gap:8px">
+            <label class="doc-item">
+              <input type="checkbox" id="doc_household_expenses" class="doc-check" data-category="hoh" />
+              <span class="doc-label">Household Expense Documentation (rent, mortgage, utilities)</span>
+            </label>
+            <label class="doc-item">
+              <input type="checkbox" id="doc_qualifying_person" class="doc-check" data-category="hoh" />
+              <span class="doc-label">Qualifying Person Residency Proof</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <h3 style="margin:0 0 6px">Attached Files</h3>
         <div id="fileList" class="filelist"></div>
       </section>
 

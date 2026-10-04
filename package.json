@@ -1,10 +1,11 @@
 {
   "name": "asal-due-diligence-app",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "ASAL Solutions LTD — Tax Due Diligence Web App (Offline-First)",
   "scripts": {
     "start": "npx http-server -p 8080 -o",
-    "dev": "npx http-server -p 8080 -o"
+    "dev": "npx http-server -p 8080 -o",
+    "test": "node --test tests/*.test.js"
   },
   "keywords": [
     "tax",
@@ -12,6 +13,9 @@
     "offline-first"
   ],
   "author": "Abdihaliim Ali",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "jsdom": "26.1.0",
+    "fake-indexeddb": "6.2.5"
+  }
 }
-

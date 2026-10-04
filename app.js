@@ -40,7 +40,7 @@
       },
       INVESTMENT_INCOME_LIMIT: 11950,
       MIN_AGE_NO_CHILDREN: 25,
-      MAX_AGE_NO_CHILDREN: 65
+      MAX_AGE_NO_CHILDREN: 64
     },
 
     // Child Tax Credit (Tax Year 2025)
@@ -74,7 +74,7 @@
     },
 
     // Due Diligence Penalty (Per Credit/Status)
-    PENALTY_PER_FAILURE: 635,
+    PENALTY_PER_FAILURE: 650,
 
     // Document Retention Period (Years)
     RETENTION_YEARS: 3
@@ -190,9 +190,10 @@
   }
   function idbPut(db, store, value){
     return new Promise((resolve, reject) => {
-      const req = tx(db, store, "readwrite").put(value);
-      req.onsuccess = () => resolve(true);
-      req.onerror = () => reject(req.error);
+      const transaction = db.transaction(store, "readwrite");
+      transaction.objectStore(store).put(value);
+      transaction.oncomplete = () => resolve(true);
+      transaction.onabort = transaction.onerror = () => reject(transaction.error || new Error("Save failed"));
     });
   }
   function idbDelete(db, store, key){
@@ -239,7 +240,9 @@
     autosaveDirty: false,
     lastSavedAt: null,
     officeHeader: defaultOfficeHeader(),
-    packetHTML: ""
+    packetHTML: "",
+    saveInFlight: null,
+    editVersion: 0
   };
 
   function defaultOfficeHeader(){
@@ -427,180 +430,12 @@
   }
 
   function computeFlags(c){
-    const flags = [];
-    const ddq = c.ddq || {};
-    const deps = c.dependents || [];
-    const credits = c.credits_claimed || {};
-    const income = c.income || {};
-    const docs = c.documents || {};
-
-    // ========== CRITICAL FLAGS (Blocks Print) ==========
-
-    // Missing core profile fields
-    const missingCore = !c.name || !c.filing_status || (!c.phone && !c.email);
-    if(missingCore) flags.push({type:"bad", text:"Missing core profile fields (name/filing status/contact)"});
-
-    // Missing SSN validation for employment
-    if(!c.ssn_valid_for_employment || c.ssn_valid_for_employment === "No") {
-      if(credits.eitc || credits.ctc || credits.actc) {
-        flags.push({type:"bad", text:"SSN must be valid for employment to claim EITC/CTC/ACTC"});
-      }
-    }
-
-    // Missing dependent SSN/ITIN
-    if(ddq.missing_ids === "Yes") {
-      flags.push({type:"bad", text:"Missing dependent SSN/ITIN — high risk / cannot finalize until resolved"});
-    }
-
-    // Dependent SSN not valid for employment (CTC requirement)
-    if(credits.ctc || credits.actc) {
-      const depsWithInvalidSSN = deps.filter(d => d.ssn_valid_for_employment !== "Yes");
-      if(depsWithInvalidSSN.length > 0) {
-        flags.push({type:"bad", text:`${depsWithInvalidSSN.length} dependent(s) need valid-for-employment SSN for CTC/ACTC`});
-      }
-    }
-
-    // Form 8862 required but not attached
-    if(ddq.form_8862_required === "Yes" && ddq.form_8862_attached !== "Yes") {
-      flags.push({type:"bad", text:"Form 8862 required (prior denial) but not attached"});
-    }
-
-    // HOH but filing status doesn't match
-    if(credits.hoh && c.filing_status !== "Head of Household") {
-      flags.push({type:"bad", text:"HOH credit claimed but filing status is not Head of Household"});
-    }
-
-    // ========== WARNING FLAGS (Review Required) ==========
-
-    // "Not sure" answers need follow-up
-    const legacyUnsure = [ddq.child_lived_half_year, ddq.anyone_else_claim, ddq.pays_household_costs, ddq.missing_ids]
-      .some(v => (v||"").toLowerCase() === "not sure");
-    if(legacyUnsure) {
-      flags.push({type:"warn", text:"Some due diligence answers are 'Not sure' — additional verification needed"});
-    }
-
-    // Dependent issues (incomplete info or residency < 7 months)
-    const depIssues = deps.some(d => {
-      const ml = parseInt(d.months_lived || "0", 10);
-      return (!d.name || !d.relationship || !d.dob || isNaN(ml) || ml < 7);
-    });
-    if(depIssues) {
-      flags.push({type:"warn", text:"Dependent details incomplete or residency < 7 months (Form 8867 Line 9)"});
-    }
-
-    // CTC age verification - child must be under 17
-    if(credits.ctc || credits.actc) {
-      const overAgeChildren = deps.filter(d => {
-        if(!d.dob) return false;
-        const age = calculateAge(d.dob);
-        return age > IRS_2025.CTC.MAX_CHILD_AGE;
-      });
-      if(overAgeChildren.length > 0) {
-        flags.push({type:"warn", text:`${overAgeChildren.length} dependent(s) age 17+ — not eligible for CTC (may qualify for ODC)`});
-      }
-    }
-
-    // Tiebreaker rules apply
-    if(ddq.anyone_else_claim === "Yes" || ddq.eitc_tiebreaker_applies === "Yes") {
-      flags.push({type:"warn", text:"Tiebreaker rules may apply — document why this taxpayer has priority claim"});
-    }
-
-    // Investment income exceeds EITC limit
-    if(credits.eitc) {
-      const investmentIncome = parseFloat(income.investment_income || "0");
-      if(investmentIncome > IRS_2025.EITC.INVESTMENT_INCOME_LIMIT) {
-        flags.push({type:"bad", text:`Investment income $${investmentIncome.toLocaleString()} exceeds EITC limit of $${IRS_2025.EITC.INVESTMENT_INCOME_LIMIT.toLocaleString()}`});
-      }
-    }
-
-    // Self-employment verification
-    if((income.self_employed||"") === "Yes") {
-      if(!(income.income_notes||"").trim()) {
-        flags.push({type:"warn", text:"Self-employed: income verification notes are blank (Form 8867 Line 8)"});
-      }
-      if(!(income.expense_notes||"").trim()) {
-        flags.push({type:"warn", text:"Self-employed: expense verification notes are blank"});
-      }
-      if(ddq.schedule_c_required === "Yes" && ddq.self_emp_records_adequate !== "Yes") {
-        flags.push({type:"warn", text:"Schedule C required but records adequacy not confirmed"});
-      }
-    }
-
-    // AOTC verification
-    if(credits.aotc) {
-      if(ddq.aotc_form_1098t_received !== "Yes") {
-        flags.push({type:"warn", text:"AOTC claimed but Form 1098-T not confirmed (Form 8867 Line 13)"});
-      }
-      if(ddq.aotc_first_4_years !== "Yes") {
-        flags.push({type:"warn", text:"AOTC: verify student has not claimed credit for 4 prior years"});
-      }
-      if(ddq.aotc_felony_drug === "Yes") {
-        flags.push({type:"bad", text:"AOTC disqualified: felony drug conviction at end of tax year"});
-      }
-    }
-
-    // HOH verification
-    if(credits.hoh || c.filing_status === "Head of Household") {
-      if(ddq.hoh_paid_over_half !== "Yes") {
-        flags.push({type:"warn", text:"HOH: must pay more than half of household costs (Form 8867 Line 14)"});
-      }
-      if(ddq.hoh_qualifying_person_lived !== "Yes") {
-        flags.push({type:"warn", text:"HOH: qualifying person must live with taxpayer more than half the year"});
-      }
-    }
-
-    // Document checklist verification
-    const docCount = countVerifiedDocuments(docs, c);
-    if(docCount < 3) {
-      flags.push({type:"warn", text:`Only ${docCount} documents verified — minimum documentation may be insufficient`});
-    }
-
-    // Legacy documents field check
-    const missingLegacyDocs = !ddq.docs || ddq.docs.trim().length < 6;
-    if(missingLegacyDocs && docCount === 0) {
-      flags.push({type:"warn", text:"Documents checklist is empty — use document verification section"});
-    }
-
-    // Knowledge requirement verification
-    if(ddq.knowledge_requirement_met !== "Yes") {
-      flags.push({type:"warn", text:"Knowledge requirement not confirmed — complete interview questions"});
-    }
-
-    // Preparer certification
-    if(ddq.preparer_satisfied_requirements !== "Yes") {
-      flags.push({type:"warn", text:"Preparer has not certified due diligence requirements met"});
-    }
-
-    // Info appears incorrect/inconsistent
-    if(ddq.info_appears_incorrect === "Yes") {
-      flags.push({type:"bad", text:"Information appears incorrect or inconsistent — do not file until resolved"});
-    }
-
-    const interviewStats = getInterviewCheckStats(c);
-    if(interviewStats.ticked < interviewStats.total){
-      const snippet = interviewStats.missing.slice(0,3).join(", ");
-      const more = interviewStats.missing.length > 3 ? ` +${interviewStats.missing.length - 3} more` : "";
-      flags.push({
-        type:"warn",
-        text:`Interview ticks incomplete: ${snippet || `${interviewStats.total - interviewStats.ticked} questions`}${more}`
-      });
-    }
-
-    return flags;
+    return DDCore.reviewIssues(c).map(text => ({type:"bad", text}));
   }
 
   // Helper function to calculate age from DOB
   function calculateAge(dob) {
-    if(!dob) return 0;
-    const birthDate = new Date(dob);
-    const today = new Date();
-    const endOfYear = new Date(IRS_2025.TAX_YEAR, 11, 31); // Dec 31 of tax year
-    let age = endOfYear.getFullYear() - birthDate.getFullYear();
-    const monthDiff = endOfYear.getMonth() - birthDate.getMonth();
-    if(monthDiff < 0 || (monthDiff === 0 && endOfYear.getDate() < birthDate.getDate())) {
-      age--;
-    }
-    return age;
+    return DDCore.ageAtYearEnd(dob, state.activeClient?.tax_year || IRS_2025.TAX_YEAR);
   }
 
   // Helper function to count verified documents
@@ -619,35 +454,26 @@
   }
 
   function isCategoryApplicable(client, category){
-    if(category === "dependents"){
-      return (client?.dependents?.length || 0) > 0;
-    }
-    if(category === "education"){
-      return Boolean(client?.credits_claimed?.aotc);
-    }
-    if(category === "hoh"){
-      return Boolean(client?.credits_claimed?.hoh) || client?.filing_status === "Head of Household";
-    }
-    return true;
+    return DDCore.categoryApplies(client || {}, category);
   }
 
   function summarizeDocuments(client){
-    const docs = client?.documents || {};
-    let total = 0;
-    let verified = 0;
+    const c = client || {}, docs = c.documents || {};
+    let total = 0, verified = 0, suggested = 0;
     const missingRequired = [];
     for(const [category, items] of Object.entries(REQUIRED_DOCUMENTS)){
-      if(!isCategoryApplicable(client, category)) continue;
-      const catDocs = docs[category] || {};
       for(const item of items){
+        if(!DDCore.documentApplies(c, category, item.id)) continue;
         total++;
-        if(catDocs[item.id]) verified++;
-        else if(item.required){
-          missingRequired.push(`${prettyCategoryName(category)} • ${item.label}`);
+        const checked = docs[category]?.[item.id] === true || docs[category]?.[item.id] === "Yes";
+        if(checked) verified++;
+        if(DDCore.documentSuggested(c, item.id)){
+          suggested++;
+          if(!checked) missingRequired.push(`${prettyCategoryName(category)} • ${item.label}`);
         }
       }
     }
-    return { total, verified, missingRequired };
+    return { total, verified, suggested, missingRequired };
   }
 
   function aggregateDocStats(clients){
@@ -697,23 +523,11 @@
   }
 
   function computeDocNeed(c){
-    const ddq = c.ddq || {};
-    const has = (ddq.docs||"").trim().length >= 6;
-    return !has;
+    return !c.ddq?.docs?.trim() || summarizeDocuments(c).missingRequired.length > 0;
   }
 
   function isReadyToPrint(c){
-    const flags = computeFlags(c);
-    const interviewStats = getInterviewCheckStats(c);
-    const interviewMissingSnippet = interviewStats.missing.length
-      ? `Missing: ${interviewStats.missing.slice(0,3).join(", ")}${interviewStats.missing.length > 3 ? ` +${interviewStats.missing.length - 3} more` : ""}`
-      : "All questions ticked";
-    const hardBad = flags.some(f => f.type === "bad");
-    if(hardBad) return false;
-    if(!c.name || !c.filing_status) return false;
-    // if dependents exist, require at least one
-    if((c.dependents||[]).length === 0 && !(c.income?.w2_employer||"") && (c.income?.self_employed||"") !== "Yes") return false;
-    return true;
+    return DDCore.reviewIssues(c).length === 0;
   }
 
   // ---------- Rendering ----------
@@ -723,7 +537,7 @@
     // dashboard KPIs + recent
     const clients = filterClients(state.clients, $("#globalSearch")?.value || state.search, $("#quickFilter")?.value || state.quickFilter);
     const totalClients = state.clients.length;
-    const drafts = state.clients.filter(c => c.status === "draft").length;
+    const drafts = state.clients.filter(c => !isReadyToPrint(c)).length;
     const needsDocs = state.clients.filter(c => computeDocNeed(c)).length;
     const readyClients = state.clients.filter(c => isReadyToPrint(c)).length;
 
@@ -834,6 +648,7 @@
     $("#healthClients").textContent = state.clients.length;
     $("#healthFiles").textContent = files.length;
     $("#healthVer").textContent = DB_VER;
+    updateBackupStatus(files);
 
     // settings
     $("#officeHeader").value = state.officeHeader;
@@ -850,7 +665,7 @@
     const docMissing = $("#docMissingClients");
     if(docMissing){
       docMissing.textContent = clients.length
-        ? docStats.missingClients ? `${docStats.missingClients} client(s) missing required docs` : "Required docs verified for all clients"
+        ? docStats.missingClients ? `${docStats.missingClients} client(s) have suggested evidence to review` : "No suggested evidence pending"
         : "No clients yet";
     }
     const interviewValue = $("#interviewCoverageValue");
@@ -1050,6 +865,7 @@
 
   function markDirty(){
     state.autosaveDirty = true;
+    state.editVersion++;
     const statusEl = $("#autosaveStatus");
     if(statusEl) statusEl.textContent = "Unsaved changes";
   }
@@ -1093,14 +909,17 @@
     const prevDeps = JSON.stringify((prev && prev.dependents) || []);
     const nextDeps = JSON.stringify((next && next.dependents) || []);
     if(prevDeps !== nextDeps) changed.push("Dependents");
-    return changed;
+    for(const key of ["credits_claimed", "documents", "ddq", "income", "ssn_valid_for_employment", "citizenship_status", "prior_address"]){
+      if(JSON.stringify(prev?.[key]) !== JSON.stringify(next?.[key])) changed.push(prettyCategoryName(key));
+    }
+    return [...new Set(changed)];
   }
 
   function computeChecklistItems(c){
     const deps = c.dependents || [];
     const depsOk = deps.length === 0 || deps.every(d => {
       const ml = parseInt(d.months_lived || "0", 10);
-      return d.name && d.relationship && d.dob && !isNaN(ml) && ml >= 7;
+      return d.name && d.relationship && d.dob && !isNaN(ml) && ml >= 0 && ml <= 12;
     });
     const docsOk = (c.ddq?.docs || "").trim().length >= 6;
     const idExpOk = !c.id_type || !!c.id_exp;
@@ -1156,8 +975,10 @@
       if(!state.modalOpen || !state.activeClientId) return;
       const statusEl = $("#autosaveStatus");
       if(statusEl) statusEl.textContent = "Saving...";
-      const didSave = await persistActiveClient({ source:"Auto-save", closeAfterSave:false, showToast:false });
-      if(statusEl) statusEl.textContent = didSave ? "Saved" : "Idle";
+      try {
+        const didSave = await persistActiveClient({ source:"Auto-save", closeAfterSave:false, showToast:false });
+        if(statusEl && !state.autosaveDirty) statusEl.textContent = didSave ? "Saved" : "Idle";
+      } catch(error) { reportSaveError(error); }
     }, 900);
   }
 
@@ -1166,7 +987,9 @@
     const t = e.target;
     if(!(t && (t.matches("input, select, textarea")))) return;
     markDirty();
+    toggleCreditSections();
     renderChecklist();
+    renderFlags();
     scheduleAutosave();
   }
 
@@ -1177,14 +1000,19 @@
   }
 
   async function persistActiveClient({ source="Manual save", closeAfterSave=true, showToast=true } = {}){
+    if(state.saveInFlight) await state.saveInFlight;
     if(!state.activeClient) return;
+    const revision = state.editVersion;
+    const clientId = state.activeClient.id;
     const draft = structuredClone(state.activeClient);
     readModalIntoClient(draft);
     const isInitial = !state.activeClientSnapshot || state.activeClientIsNew;
     const changedFields = isInitial ? ["Initial save"] : computeChangedFields(state.activeClientSnapshot, draft);
     const shouldSave = isInitial || changedFields.length > 0 || source === "Manual save";
     if(!shouldSave){
+      state.autosaveDirty = false;
       updateSaveIndicators();
+      if(closeAfterSave) await finishClosingClient();
       return false;
     }
     if(changedFields.length){
@@ -1192,29 +1020,56 @@
       draft.history.push({ at: Date.now(), fields: changedFields, source });
       if(draft.history.length > 50) draft.history = draft.history.slice(-50);
     }
-    await idbPut(state.db, STORE_CLIENTS, draft);
-    state.activeClient = draft;
+    state.saveInFlight = idbPut(state.db, STORE_CLIENTS, draft);
+    try { await state.saveInFlight; } finally { state.saveInFlight = null; }
+    if(state.activeClient?.id !== clientId) return true;
+    if(revision === state.editVersion) state.activeClient = draft;
     state.activeClientSnapshot = structuredClone(draft);
     state.activeClientIsNew = false;
     state.lastSavedAt = draft.updatedAt;
-    state.autosaveDirty = false;
+    state.autosaveDirty = revision !== state.editVersion;
     updateSaveIndicators();
     updateModalMeta(draft);
     renderChecklist();
     renderHistory();
     if(showToast) toast("Saved.");
 
+    if(closeAfterSave && state.autosaveDirty){
+      return persistActiveClient({source,closeAfterSave,showToast});
+    }
     if(closeAfterSave){
-      showModal(false);
-      state.activeClient = null;
-      state.activeClientId = null;
-      state.activeFiles = [];
-      state.clients = await idbGetAll(state.db, STORE_CLIENTS);
-      render();
+      await finishClosingClient();
     }else{
       upsertClientCache(draft);
     }
     return true;
+  }
+
+  function reportSaveError(error){
+    console.error("Local save failed", error);
+    state.autosaveDirty = true;
+    $("#autosaveStatus").textContent = "Save failed — keep this window open";
+    toast("Could not save. Keep this window open and try Save again.");
+  }
+
+  async function finishClosingClient(){
+    clearTimeout(state.autosaveTimer);
+    state.clients = await idbGetAll(state.db, STORE_CLIENTS);
+    await render();
+    if(state.autosaveDirty) return persistActiveClient({source:"Save on close",closeAfterSave:true,showToast:false});
+    showModal(false);
+    state.activeClient = null;
+    state.activeClientId = null;
+    state.activeFiles = [];
+  }
+
+  async function closeClient(){
+    clearTimeout(state.autosaveTimer);
+    try {
+      if(state.autosaveDirty || state.saveInFlight) {
+        await persistActiveClient({source:"Save on close",closeAfterSave:true,showToast:false});
+      } else { await finishClosingClient(); }
+    } catch(error) { reportSaveError(error); }
   }
 
   function setModalTab(name){
@@ -1344,6 +1199,8 @@
     setSelectValue("#d_knowledge_met", c.ddq?.knowledge_requirement_met);
     setInputValue("#d_cert_date", c.ddq?.preparer_certification_date);
 
+    renderOfficialChecklist(c);
+
     // Document Checklist
     fillDocumentChecklist(c.documents || {});
     fillInterviewChecks(c);
@@ -1360,7 +1217,12 @@
   // Helper functions for filling form fields
   function setSelectValue(selector, value) {
     const el = $(selector);
-    if(el) el.value = value || "";
+    if(el){
+      if(value && !Array.from(el.options).some(o=>o.value===value)){
+        const option=document.createElement("option");option.value=value;option.textContent="Previously recorded: "+value;el.add(option);
+      }
+      el.value=value||"";
+    }
   }
   function setInputValue(selector, value) {
     const el = $(selector);
@@ -1410,19 +1272,20 @@
 
   function setCheckbox(selector, value) {
     const el = $(selector);
-    if(el) el.checked = !!value;
+    if(el) el.checked = value === true || value === "Yes";
   }
 
   function renderDocTickSummary(){
     const box = $("#docTickSummary");
     if(!box) return;
     const docs = readDocumentChecklist();
-    const client = state.activeClient || {};
+    const client = currentDraft();
     const rows = Object.entries(REQUIRED_DOCUMENTS).map(([category, items]) => {
       const applicable = isCategoryApplicable(client, category);
-      const verified = items.filter(item => docs[category]?.[item.id]).length;
+      const visibleItems = items.filter(item => DDCore.documentApplies(client,category,item.id));
+      const verified = visibleItems.filter(item => docs[category]?.[item.id]).length;
       const countClass = applicable ? "doc-tick-count" : "doc-tick-count muted";
-      const countText = applicable ? `${verified}/${items.length} ✓` : "Not required";
+      const countText = applicable ? `${verified} reviewed` : "Not applicable";
       return `
         <div class="doc-tick-row">
           <span class="doc-cat">${prettyCategoryName(category)}</span>
@@ -1440,63 +1303,78 @@
     });
   }
 
-  function updateDocumentCounts() {
-    const allChecks = $$(".doc-check");
-    const verified = allChecks.filter(c => c.checked).length;
-    const required = $$(".doc-item .badge.warn").length;
-    const requiredChecked = $$(".doc-item").filter(item => {
-      const hasRequired = item.querySelector(".badge.warn");
-      const checkbox = item.querySelector(".doc-check");
-      return hasRequired && checkbox && checkbox.checked;
-    }).length;
+  function renderOfficialChecklist(c){
+    const f = c.ddq?.form8867 || {};
+    const select = (id, label, choices=["Yes","No"]) => `<div class="official-question" data-question="${id}"><label for="form_${id}">${escapeHtml(label)}</label><select id="form_${id}" data-8867="${id}"><option value="">Select…</option>${choices.map(v=>`<option value="${v}" ${f[id]===v?"selected":""}>${v}</option>`).join("")}</select></div>`;
+    const textField = (id,label,type="text") => `<div><label for="form_${id}">${escapeHtml(label)}</label><input type="${type}" id="form_${id}" data-8867="${id}" value="${escapeAttr(f[id]||"")}" /></div>`;
+    $("#officialChecklist").innerHTML = `
+      <h3>Form 8867 review</h3>
+      <p class="small">Questions follow the official Form 8867 (Rev. November 2024), with November 2025 instructions. This is a supporting record; file the official form through your tax software when required. Existing interview answers stay below and do not automatically answer this checklist.</p>
+      <a href="${DDCore.FORM_SOURCE}" target="_blank" rel="noopener">Open official IRS Form 8867</a>
+      ${select("benefits_reviewed","Have you reviewed the filing status and selected all credits being claimed?")}
+      <div id="noBenefitsNote" class="hint">No covered credit or HOH status selected. Confirm the selections above.</div>
+      ${["I","II","III","IV","V","VI"].map(part=>`<fieldset class="official-part" data-part="${part}"><legend>Part ${part}</legend><div class="row">${DDCore.questions.filter(q=>q.part===part).map(q=>select(q.id,`Line ${q.id}: ${q.text}`,["Yes","No",...(["2","7a","8","9b","9c","11","12"].includes(q.id)?["N/A"]:[])])).join("")}</div></fieldset>`).join("")}
+      <div id="officialFollowups">
+        ${select("prior_disallowance","Client response: were any covered credits previously disallowed or reduced?")}
+        ${select("ssn_review","Have you verified all applicable taxpayer, spouse, and child SSN rules?")}
+        <p id="ssnRuleHelp" class="small">For 2025 CTC/ACTC, one filer on a joint return must have a qualifying SSN; the other may have an ITIN. EIC generally requires qualifying SSNs for both joint filers and any qualifying child claimed for EIC. Review issuance deadlines and exceptions in the IRS instructions.</p>
+        <div class="row">${textField("information_source","Who provided the information, and how? (Example: taxpayer, in-person interview)")}${textField("interview_date","Interview / information received date","date")}</div>
+        <div id="inquiryFollowups"><label for="form_inquiry_notes">Additional questions, who answered, when, and their responses</label><textarea id="form_inquiry_notes" data-8867="inquiry_notes">${escapeHtml(f.inquiry_notes||"")}</textarea><label for="form_resolution_notes">Resolution and effect on the return</label><textarea id="form_resolution_notes" data-8867="resolution_notes">${escapeHtml(f.resolution_notes||"")}</textarea></div>
+        <label for="form_exception_notes">Explanation for any N/A answers or special rules used</label><textarea id="form_exception_notes" data-8867="exception_notes">${escapeHtml(f.exception_notes||"")}</textarea>
+      </div>`;
+  }
 
-    if($("#verifiedCount")) $("#verifiedCount").textContent = verified;
-    if($("#requiredCount")) $("#requiredCount").textContent = required;
-    if($("#pendingCount")) $("#pendingCount").textContent = required - requiredChecked;
+  function officialChecklistPacket(c){
+    const f=c.ddq?.form8867||{};
+    const rows=DDCore.applicableQuestions(c).map(q=>`<tr><td style="border:1px solid #ddd;padding:5px">${escapeHtml(q.id)}</td><td style="border:1px solid #ddd;padding:5px">${escapeHtml(q.text)}</td><td style="border:1px solid #ddd;padding:5px">${escapeHtml(f[q.id]||"UNANSWERED")}</td></tr>`).join("");
+    const notes=[['Credit/status selections reviewed',f.benefits_reviewed],['Previous disallowance/reduction',f.prior_disallowance],['Information source and method',f.information_source],['Interview date',f.interview_date],['Questions and responses',f.inquiry_notes],['Resolution',f.resolution_notes],['Exceptions / N/A explanation',f.exception_notes],['Applicable SSN rules reviewed',f.ssn_review]].map(([label,value])=>`<div style="white-space:pre-wrap;margin:4px 0"><b>${escapeHtml(label)}:</b> ${escapeHtml(value||"Not entered")}</div>`).join("");
+    return `<section style="margin:12px 0;font-size:11px"><h3>Form 8867 supporting checklist</h3><p>Checklist review version ${DDCore.REVISION}. Submit the official Form 8867 with the return when required.</p>${rows?`<table style="border-collapse:collapse;width:100%">${rows}</table>`:'<p>No covered benefits selected.</p>'}${notes}</section>`;
+  }
 
+  function documentKey(checkbox){
+    return ({doc_mail:"mail_correspondence",doc_qualifying_person:"qualifying_person_docs"})[checkbox.id] || checkbox.id.replace(/^doc_/,"");
+  }
+
+  function updateDocumentCounts(){
+    if(!state.activeClient) return;
+    const c=currentDraft(), summary=summarizeDocuments(c);
+    $$(".doc-check").forEach(check=>{
+      const cat=check.dataset.category, id=documentKey(check), item=check.closest(".doc-item");
+      item.style.display=DDCore.documentApplies(c,cat,id)?"":"none";
+      item.querySelectorAll(".badge.warn").forEach(b=>b.remove());
+      if(DDCore.documentSuggested(c,id)){
+        const badge=document.createElement("span"); badge.className="badge warn";badge.textContent="Suggested";item.append(badge);
+      }
+      check.closest(".doc-category").style.display=isCategoryApplicable(c,cat)?"":"none";
+    });
+    $("#verifiedCount").textContent=summary.verified;
+    $("#requiredCount").textContent=summary.suggested;
+    $("#pendingCount").textContent=summary.missingRequired.length;
     renderDocTickSummary();
   }
 
-  // Toggle visibility of credit-specific DDQ sections and interview fields
-  function toggleCreditSections() {
-    const eitc = getCheckboxValue("#credit_eitc");
-    const ctc = getCheckboxValue("#credit_ctc");
-    const actc = getCheckboxValue("#credit_actc");
-    const aotc = getCheckboxValue("#credit_aotc");
-    const hoh = getCheckboxValue("#credit_hoh");
-    const selfEmp = $("#i_self")?.value === "Yes";
-
-    // Show/hide EITC section (always show for visibility, just highlight)
-    const eitcSection = $("#ddq_eitc_section");
-    if(eitcSection) eitcSection.style.opacity = eitc ? "1" : "0.5";
-
-    // Show/hide CTC section
-    const ctcSection = $("#ddq_ctc_section");
-    if(ctcSection) ctcSection.style.opacity = (ctc || actc) ? "1" : "0.5";
-
-    // Show/hide AOTC section
-    const aotcSection = $("#ddq_aotc_section");
-    if(aotcSection) aotcSection.style.opacity = aotc ? "1" : "0.5";
-
-    // Show/hide HOH section
-    const hohSection = $("#ddq_hoh_section");
-    if(hohSection) hohSection.style.opacity = hoh ? "1" : "0.5";
-
-    // Show/hide self-employment interview section
-    const selfEmpInterview = $("#self_emp_interview");
-    if(selfEmpInterview) selfEmpInterview.style.display = selfEmp ? "grid" : "none";
-
-    // Show/hide education interview section
-    const eduInterview = $("#education_interview");
-    if(eduInterview) eduInterview.style.display = aotc ? "grid" : "none";
-
-    // Show/hide education documents section
-    const eduDocsSection = $("#education_docs_section");
-    if(eduDocsSection) eduDocsSection.style.display = aotc ? "block" : "none";
-
-    // Show/hide HOH documents section
-    const hohDocsSection = $("#hoh_docs_section");
-    if(hohDocsSection) hohDocsSection.style.display = hoh ? "block" : "none";
+  function toggleCreditSections(){
+    if(!state.activeClient) return;
+    const c=currentDraft(), b=DDCore.benefits(c), f=c.ddq?.form8867||{};
+    const visible=(selector,yes)=>{const el=$(selector);if(el)el.style.display=yes?"":"none";};
+    visible("#ddq_eitc_section",b.eitc);
+    visible("#ddq_ctc_section",b.ctc||b.actc||b.odc);
+    visible("#ddq_aotc_section",b.aotc);
+    visible("#ddq_hoh_section",b.hoh);
+    visible("#ddq_self_emp_section",c.income?.self_employed==="Yes");
+    visible("#self_emp_interview",c.income?.self_employed==="Yes");
+    visible("#education_interview",b.aotc);
+    visible("#noBenefitsNote",!DDCore.hasBenefits(c));
+    visible("#officialFollowups",DDCore.hasBenefits(c));
+    visible("#inquiryFollowups",f["4"]==="Yes");
+    visible('[data-question="ssn_review"]',b.eitc||b.ctc||b.actc);
+    visible("#ssnRuleHelp",b.eitc||b.ctc||b.actc);
+    const applicable=new Set(DDCore.applicableQuestions(c).map(q=>q.id));
+    DDCore.questions.forEach(q=>visible(`[data-question="${q.id}"]`,applicable.has(q.id)));
+    $$(".official-part").forEach(el=>el.style.display=DDCore.questions.some(q=>q.part===el.dataset.part&&applicable.has(q.id))?"":"none");
+    ["#d_int_relation","#d_int_school","#d_int_childcare","#d_int_custody","#d_int_other_parent","#d_child_half","#d_else_claim","#d_missing_ids"].forEach(sel=>{const el=$(sel);if(el)el.parentElement.style.display=c.dependents?.length?"":"none";});
+    $("#d_house_costs").parentElement.style.display=b.hoh?"":"none";
+    updateDocumentCounts();
   }
 
   function readModalIntoClient(c){
@@ -1616,7 +1494,11 @@
     c.ddq.preparer_certification_date = getInputValue("#d_cert_date");
 
     // Document Checklist
-    c.documents = readDocumentChecklist();
+    const currentDocs = readDocumentChecklist();
+    c.documents = c.documents || {};
+    for(const [category,values] of Object.entries(currentDocs)) c.documents[category] = {...c.documents[category],...values};
+    c.ddq.form8867 = {...c.ddq.form8867, revision:DDCore.REVISION};
+    $$("[data-8867]").forEach(el => { c.ddq.form8867[el.dataset["8867"]] = el.value.trim(); });
 
     c.updatedAt = Date.now();
     c.status = isReadyToPrint(c) ? "ready" : "draft";
@@ -1721,14 +1603,15 @@
     if(!c) return;
     const deps = c.dependents || [];
     $("#depCount").textContent = deps.length;
+    toggleCreditSections();
 
     box.innerHTML = deps.map((d, idx) => {
       const age = d.dob ? calculateAge(d.dob) : null;
       const ageDisplay = age !== null ? `Age: ${age}` : "";
       const ctcEligible = age !== null && age <= IRS_2025.CTC.MAX_CHILD_AGE;
       const ageBadge = age !== null ? (ctcEligible
-        ? `<span class="badge ok" style="font-size:10px">CTC Eligible (under 17)</span>`
-        : `<span class="badge warn" style="font-size:10px">ODC Only (17+)</span>`) : "";
+        ? `<span class="badge ok" style="font-size:10px">Under 17 — review CTC rules</span>`
+        : `<span class="badge warn" style="font-size:10px">17+ — review ODC rules</span>`) : "";
 
       return `
       <div class="dep" data-idx="${idx}">
@@ -1858,6 +1741,7 @@
   // ---------- Files ----------
   async function addFiles(fileList){
     if(!state.activeClientId) return;
+    await persistActiveClient({source:"Save before attachments",closeAfterSave:false,showToast:false});
     const files = Array.from(fileList || []);
     for(const f of files){
       const rec = {
@@ -1931,35 +1815,17 @@
   }
 
   // ---------- Flags ----------
+  function currentDraft(){
+    const c = structuredClone(state.activeClient || {});
+    if(state.activeClient) readModalIntoClient(c);
+    return c;
+  }
+
   function renderFlags(){
     const box = $("#flagBox");
     if(!box || !state.activeClient) return;
-    // pull fresh ddq values before computing
-    const tmp = state.activeClient;
-    tmp.ddq = tmp.ddq || {};
-    tmp.ddq.child_lived_half_year = $("#d_child_half").value;
-    tmp.ddq.anyone_else_claim = $("#d_else_claim").value;
-    tmp.ddq.pays_household_costs = $("#d_house_costs").value;
-    tmp.ddq.missing_ids = $("#d_missing_ids").value;
-    tmp.ddq.docs = $("#d_docs").value;
-    tmp.ddq.preparer_notes = $("#d_notes").value;
-
-    tmp.name = $("#f_name").value;
-    tmp.filing_status = $("#f_filing").value;
-    tmp.phone = $("#f_phone").value;
-    tmp.email = $("#f_email").value;
-
-    tmp.income = tmp.income || {};
-    tmp.income.self_employed = $("#i_self").value;
-    tmp.income.income_notes = $("#i_income_notes").value;
-    tmp.income.expense_notes = $("#i_exp_notes").value;
-
-    const flags = computeFlags(tmp);
-    if(!flags.length){
-      box.innerHTML = `<span class="badge ok">No flags</span>`;
-      return;
-    }
-    box.innerHTML = flags.map(f => `<div style="margin:6px 0"><span class="badge ${f.type}">${escapeHtml(f.type.toUpperCase())}</span> <span>${escapeHtml(f.text)}</span></div>`).join("");
+    const flags = computeFlags(currentDraft());
+    box.innerHTML = flags.length ? flags.map(f => `<div style="margin:6px 0"><span class="badge ${f.type}">REVIEW</span> ${escapeHtml(f.text)}</div>`).join("") : '<span class="badge ok">Review complete</span>';
   }
 
   // ---------- Print Packet (IRS 2025 Compliant) ----------
@@ -1971,7 +1837,7 @@
     const depRows = deps.map((d,i)=>{
       const age = d.dob ? calculateAge(d.dob) : null;
       const ctcEligible = age !== null && age <= IRS_2025.CTC.MAX_CHILD_AGE;
-      const eligBadge = age !== null ? (ctcEligible ? "CTC" : "ODC") : "";
+      const eligBadge = age !== null ? (ctcEligible ? "Review CTC/ODC" : "Review ODC") : "";
       return `
       <tr>
         <td style="padding:4px;border:1px solid #ddd">${i+1}</td>
@@ -1986,7 +1852,7 @@
     `;}).join("");
 
     const flags = computeFlags(c);
-    const credits = c.credits_claimed || {};
+    const credits = DDCore.benefits(c);
     const creditsList = [];
     if(credits.eitc) creditsList.push("EITC");
     if(credits.ctc) creditsList.push("CTC");
@@ -2026,11 +1892,12 @@
           </div>
           <div style="text-align:right;font-size:12px">
             <div style="background:#1e40af;color:#fff;padding:6px 10px;border-radius:6px;font-weight:bold;margin-bottom:6px">
-              IRS 2025 • Form 8867 Compliant
+              ${isReadyToPrint(c) ? "Review complete" : "DRAFT — REVIEW REQUIRED"}
             </div>
             <div><b>Date:</b> ${escapeHtml(today)}</div>
             <div><b>Client ID:</b> ${escapeHtml(c.id)}</div>
-            <div><b>Tax Year:</b> ${IRS_2025.TAX_YEAR}</div>
+            <div><b>Tax Year:</b> ${escapeHtml(c.tax_year || IRS_2025.TAX_YEAR)}</div>
+            <div>Supporting record • File official Form 8867 with the return when required.</div>
           </div>
         </div>
 
@@ -2073,7 +1940,7 @@
           </tr>
           ${depRows || `<tr><td colspan="8" style="border:1px solid #ddd;padding:4px">No dependents entered.</td></tr>`}
         </table>
-        <div style="font-size:9px;color:#666;margin-top:4px">CTC = Child Tax Credit (under 17) • ODC = Other Dependents Credit (17+) • ✓ = SSN valid for employment</div>
+        <div style="font-size:9px;color:#666;margin-top:4px">Age alone does not establish credit eligibility. Review all applicable requirements. ✓ = SSN valid for employment</div>
 
         <div style="height:12px"></div>
 
@@ -2090,19 +1957,7 @@
 
         <div style="height:12px"></div>
 
-        <!-- Form 8867 Due Diligence Checklist -->
-        <div style="background:#f0fdf4;border:2px solid #22c55e;border-radius:8px;padding:10px;margin-bottom:12px">
-          <div style="font-weight:900;font-size:13px;color:#166534;margin-bottom:8px">IRS Form 8867 - Paid Preparer's Due Diligence Checklist</div>
-          <table style="width:100%;border-collapse:collapse;font-size:11px">
-            <tr><td style="padding:3px;width:50%"><b>Part I:</b> Worksheets completed?</td><td style="padding:3px">${escapeHtml(c.ddq?.completed_worksheets||"")}</td></tr>
-            <tr><td style="padding:3px"><b>Line 3:</b> Info appears incorrect?</td><td style="padding:3px">${escapeHtml(c.ddq?.info_appears_incorrect||"")}</td></tr>
-            <tr><td style="padding:3px"><b>Line 4:</b> Reasonable inquiries made?</td><td style="padding:3px">${escapeHtml(c.ddq?.made_reasonable_inquiries||"")}</td></tr>
-            <tr><td style="padding:3px"><b>Line 5:</b> Inquiries documented?</td><td style="padding:3px">${escapeHtml(c.ddq?.documented_inquiries||"")}</td></tr>
-            <tr><td style="padding:3px"><b>Line 6:</b> Advised about IRS doc requests?</td><td style="padding:3px">${escapeHtml(c.ddq?.advised_irs_may_request_docs||"")}</td></tr>
-            <tr><td style="padding:3px"><b>Line 7:</b> Form 8862 required?</td><td style="padding:3px">${escapeHtml(c.ddq?.form_8862_required||"")} ${c.ddq?.form_8862_attached === "Yes" ? "(Attached)" : ""}</td></tr>
-            <tr><td style="padding:3px"><b>Line 8:</b> Schedule C required?</td><td style="padding:3px">${escapeHtml(c.ddq?.schedule_c_required||"")}</td></tr>
-          </table>
-        </div>
+        ${officialChecklistPacket(c)}
 
         <!-- Credit-Specific Due Diligence -->
         ${credits.eitc ? `
@@ -2207,7 +2062,7 @@
           <div style="font-size:11px">
             <b>Requirements satisfied:</b> ${escapeHtml(c.ddq?.preparer_satisfied_requirements||"Not confirmed")}<br/>
             <b>Knowledge requirement met:</b> ${escapeHtml(c.ddq?.knowledge_requirement_met||"Not confirmed")}<br/>
-            <b>Certification date:</b> ${escapeHtml(c.ddq?.preparer_certification_date||today)}
+            <b>Certification date:</b> ${escapeHtml(c.ddq?.preparer_certification_date||"Not entered")}
           </div>
         </div>
 
@@ -2238,7 +2093,7 @@
         </div>
 
         <div style="text-align:center;margin-top:14px;font-size:9px;color:#666">
-          Document retention: ${IRS_2025.RETENTION_YEARS} years from filing date per IRS regulations • Penalty for non-compliance: $${IRS_2025.PENALTY_PER_FAILURE} per failure
+          ${DDCore.RETENTION} • Returns filed in 2026: $650 per due-diligence failure. Filing-year amounts may change.
         </div>
       </div>
     `;
@@ -2246,7 +2101,7 @@
 
   async function renderPacketPreview(){
     if(!state.activeClient) return;
-    const c = state.activeClient;
+    const c = currentDraft();
     const files = state.activeFiles || [];
     const html = buildPacketHTML(c, files);
     state.packetHTML = html;
@@ -2257,7 +2112,7 @@
         ${html}
       </div>
     `;
-    $("#packetStatus").textContent = "Generated";
+    $("#packetStatus").textContent = isReadyToPrint(c) ? "Review complete" : "Draft — review required";
   }
 
   async function printClientFromModal(){
@@ -2265,13 +2120,13 @@
       toast("No client selected.");
       return;
     }
-    // Save any unsaved changes first
-    readModalIntoClient(state.activeClient);
-    const c = state.activeClient;
+    const w = window.open("", "_blank");
+    if(!w){toast("Allow pop-ups for this site to print the packet.");return;}
+    try{await persistActiveClient({source:"Save before print",closeAfterSave:false,showToast:false});}
+    catch(error){w.close();reportSaveError(error);return;}
+    const c = currentDraft();
     const files = state.activeFiles || [];
     const html = buildPacketHTML(c, files);
-
-    const w = window.open("", "_blank");
     w.document.open();
     w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Print Packet - ${escapeHtml(c.name || "Client")}</title></head><body>${html}<script>window.onload=()=>{window.print();};</script></body></html>`);
     w.document.close();
@@ -2498,82 +2353,137 @@
   window.generateMockData = generateMockData;
 
   // ---------- Backup ----------
-  async function exportBackup(includeFiles=true){
-    const clients = await idbGetAll(state.db, STORE_CLIENTS);
-    const files = includeFiles ? await idbGetAll(state.db, STORE_FILES) : [];
-    // Convert blobs to base64 for export (big, but portable).
-    const fileOut = [];
-    for(const f of files){
-      const b64 = await blobToBase64(f.blob);
-      fileOut.push({
-        id: f.id,
-        clientId: f.clientId,
-        name: f.name,
-        type: f.type,
-        size: f.size,
-        createdAt: f.createdAt,
-        blobBase64: b64
-      });
-    }
-    const payload = {
-      meta: { app:"asal-dd", version: DB_VER, exportedAt: Date.now() },
-      settings: { officeHeader: state.officeHeader },
-      clients,
-      files: fileOut
-    };
-    downloadJSON(payload, includeFiles ? "asal-dd-backup-full" : "asal-dd-backup-lite");
+  let pendingRestore = null;
+  let exportIncludesFiles = true;
+  const BACKUP_HISTORY_KEY = "asal_dd_backup_history_v1";
+
+  async function readDatabaseSnapshot(){
+    return new Promise((resolve,reject)=>{
+      const transaction=state.db.transaction([STORE_CLIENTS,STORE_FILES],"readonly");
+      const clients=transaction.objectStore(STORE_CLIENTS).getAll();
+      const files=transaction.objectStore(STORE_FILES).getAll();
+      transaction.oncomplete=()=>resolve({clients:clients.result,files:files.result});
+      transaction.onabort=transaction.onerror=()=>reject(transaction.error||new Error("Could not read records."));
+    });
   }
 
-  function downloadJSON(obj, name){
-    const blob = new Blob([JSON.stringify(obj, null, 2)], {type:"application/json"});
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = `${name}-${new Date().toISOString().slice(0,10)}.json`;
-    a.click();
-    URL.revokeObjectURL(a.href);
+  function backupHistory(){
+    try{return JSON.parse(localStorage.getItem(BACKUP_HISTORY_KEY)||"{}");}catch{return {};}
+  }
+
+  function updateBackupStatus(files=[]){
+    const saved=backupHistory();
+    const latest=Math.max(0,...state.clients.map(c=>c.updatedAt||0),...files.map(f=>f.createdAt||0));
+    $("#lastBackup").textContent=saved.at?fmtWhen(saved.at):"No full backup prepared in this browser";
+    const reminder=$("#backupReminder");
+    const needsBackup=state.clients.length && (!saved.at || latest>saved.at || Date.now()-saved.at>86400000);
+    reminder.hidden=!needsBackup;
+    reminder.textContent=saved.at?"Back up your current records. The last full export was prepared on "+fmtWhen(saved.at)+". Save the downloaded file somewhere secure outside this browser.":"Your records are stored in this browser. Create an encrypted full backup and keep it in a secure location outside this browser.";
+  }
+
+  function exportBackup(includeFiles=true){
+    exportIncludesFiles=includeFiles;
+    $("#backupPassword").value="";
+    $("#backupPasswordConfirm").value="";
+    $("#backupError").textContent="";
+    $("#backupDialogTitle").textContent=includeFiles?"Create encrypted full backup":"Export encrypted records only";
+    $("#backupDialog").showModal();
+    $("#backupPassword").focus();
+  }
+
+  async function finishExport(event){
+    event.preventDefault();
+    const button=$("#confirmBackup");button.disabled=true;
+    try{
+      const password=$("#backupPassword").value;
+      if(password!==$("#backupPasswordConfirm").value) throw new Error("The two passwords do not match.");
+      if(state.modalOpen && state.autosaveDirty) await persistActiveClient({source:"Save before backup",closeAfterSave:false,showToast:false});
+      const snapshot=await readDatabaseSnapshot(), fileOut=[];
+      for(const f of (exportIncludesFiles?snapshot.files:[])){
+        fileOut.push({id:f.id,clientId:f.clientId,name:f.name,type:f.type,size:f.blob.size,createdAt:f.createdAt,blobBase64:await blobToBase64(f.blob)});
+      }
+      const at=Date.now();
+      const payload={meta:{app:"asal-dd",version:DB_VER,exportedAt:at,includesFiles:exportIncludesFiles},settings:{officeHeader:state.officeHeader},clients:snapshot.clients,files:fileOut};
+      $("#backupError").textContent="Encrypting and checking backup…";
+      const encrypted=await DDBackup.encrypt(payload,password);
+      if(new Blob([JSON.stringify(encrypted)]).size>100*1024*1024) throw new Error("This backup exceeds the 100 MB portable restore limit. Keep the current browser records and arrange a larger backup before clearing any data.");
+      const verified=await DDBackup.decrypt(encrypted,password);
+      if(JSON.stringify(verified)!==JSON.stringify(payload)) throw new Error("Backup verification failed. Nothing was downloaded.");
+      downloadJSON(encrypted,exportIncludesFiles?"asal-dd-encrypted-full":"asal-dd-encrypted-records-only");
+      if(exportIncludesFiles){
+        try{localStorage.setItem(BACKUP_HISTORY_KEY,JSON.stringify({at,clients:payload.clients.length,files:payload.files.length}));}catch{}
+      }
+      $("#backupDialog").close();$("#backupPassword").value="";$("#backupPasswordConfirm").value="";
+      updateBackupStatus(snapshot.files);
+      toast("Backup checked; download requested. Save the file and keep its password separately.");
+    }catch(error){$("#backupError").textContent=error.message;}
+    finally{button.disabled=false;}
+  }
+
+  function downloadJSON(obj,name){
+    const blob=new Blob([JSON.stringify(obj)],{type:"application/json"}),a=document.createElement("a");
+    const url=URL.createObjectURL(blob);a.href=url;
+    a.download=`${name}-${new Date().toISOString().replace(/[:.]/g,"-")}.json`;
+    document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);
   }
 
   async function importBackupFile(file){
-    const text = await file.text();
-    const data = JSON.parse(text);
-
-    if(!data || !data.meta || !Array.isArray(data.clients)){
-      alert("Invalid backup file.");
-      return;
+    pendingRestore=null;
+    if(file.size>100*1024*1024) throw new Error("This file is over the 100 MB restore limit. Keep it safe and contact support for a larger restore.");
+    const data=JSON.parse(await file.text());
+    $("#restoreError").textContent="";$("#restorePassword").value="";
+    $("#restoreMode").value="keep";$("#restoreHeader").checked=false;
+    if(data.format===DDBackup.FORMAT){
+      pendingRestore={envelope:data};
+      $("#restoreUnlock").hidden=false;$("#restorePreview").hidden=true;
+      $("#restoreDialog").showModal();$("#restorePassword").focus();
+    }else{
+      pendingRestore={data:DDBackup.validate(data)};
+      await showRestorePreview();$("#restoreDialog").showModal();
     }
+  }
 
-    // restore settings
-    if(data.settings?.officeHeader){
-      state.officeHeader = data.settings.officeHeader;
-      saveSettings();
-      $("#officeHeader").value = state.officeHeader;
-    }
+  async function showRestorePreview(){
+    const snapshot=await readDatabaseSnapshot();
+    const plan=DDBackup.planRestore(pendingRestore.data,snapshot.clients,snapshot.files,$("#restoreMode").value);
+    $("#restoreUnlock").hidden=true;$("#restorePreview").hidden=false;
+    $("#restoreSummary").textContent=`Backup: ${pendingRestore.data.clients.length} clients and ${pendingRestore.data.files.length} attachments. This restore will add ${plan.clients.length} clients and ${plan.files.length} attachments; ${plan.skipped} existing clients will be kept, and ${plan.copied} will be restored as separate copies. Existing records are never overwritten.`;
+  }
 
-    // restore clients
-    for(const c of data.clients){
-      await idbPut(state.db, STORE_CLIENTS, c);
-    }
+  async function unlockRestore(event){
+    event.preventDefault();$("#unlockBackup").disabled=true;
+    try{
+      const data=await DDBackup.decrypt(pendingRestore.envelope,$("#restorePassword").value);
+      pendingRestore={data};$("#restorePassword").value="";$("#restoreError").textContent="";
+      await showRestorePreview();
+    }catch(error){$("#restoreError").textContent=error.message;}
+    finally{$("#unlockBackup").disabled=false;}
+  }
 
-    // restore files
-    if(Array.isArray(data.files)){
-      for(const f of data.files){
-        if(!f.blobBase64) continue;
-        const blob = base64ToBlob(f.blobBase64, f.type || "application/octet-stream");
-        await idbPut(state.db, STORE_FILES, {
-          id: f.id,
-          clientId: f.clientId,
-          name: f.name,
-          type: f.type,
-          size: f.size,
-          createdAt: f.createdAt,
-          blob
-        });
+  async function finishRestore(){
+    $("#confirmRestore").disabled=true;
+    try{
+      if(!pendingRestore?.data) throw new Error("Select and verify a backup first.");
+      const snapshot=await readDatabaseSnapshot();
+      const plan=DDBackup.planRestore(pendingRestore.data,snapshot.clients,snapshot.files,$("#restoreMode").value);
+      const files=plan.files.map(f=>({id:f.id,clientId:f.clientId,name:f.name,type:f.type||"application/octet-stream",size:f.size,createdAt:f.createdAt,blob:base64ToBlob(f.blobBase64,f.type||"application/octet-stream")}));
+      // All adds commit together. A collision or quota error aborts the entire restore.
+      await new Promise((resolve,reject)=>{
+        const transaction=state.db.transaction([STORE_CLIENTS,STORE_FILES],"readwrite");
+        transaction.oncomplete=resolve;
+        transaction.onabort=transaction.onerror=()=>reject(transaction.error||new Error("Restore failed. Existing records were not changed."));
+        for(const c of plan.clients)transaction.objectStore(STORE_CLIENTS).add(c);
+        for(const f of files)transaction.objectStore(STORE_FILES).add(f);
+      });
+      if($("#restoreHeader").checked && pendingRestore.data.settings?.officeHeader){
+        state.officeHeader=pendingRestore.data.settings.officeHeader;
+        try{saveSettings();}catch{toast("Records restored, but the office header could not be saved.");}
       }
-    }
-
-    state.clients = await idbGetAll(state.db, STORE_CLIENTS);
-    toast("Backup imported.");
-    render();
+      pendingRestore=null;$("#restoreDialog").close();
+      state.clients=await idbGetAll(state.db,STORE_CLIENTS);await render();
+      toast(`Restored ${plan.clients.length} clients and ${files.length} attachments. Existing records preserved.`);
+    }catch(error){$("#restoreError").textContent=error.message;}
+    finally{$("#confirmRestore").disabled=false;}
   }
 
   function blobToBase64(blob){
@@ -2620,22 +2530,25 @@
       setModalTab("profile");
       showModal(true);
     });
-    $("#btnSave").addEventListener("click", saveClient);
-    $("#btnClose").addEventListener("click", ()=> showModal(false));
-    $("#modal").addEventListener("click", (e)=>{ if(e.target.id === "modal") showModal(false); });
+    $("#btnSave").addEventListener("click", () => saveClient().catch(reportSaveError));
+    $("#btnClose").addEventListener("click", closeClient);
+    $("#modal").addEventListener("click", (e)=>{ if(e.target.id === "modal") closeClient(); });
 
-    $("#btnQuickBackup").addEventListener("click", async ()=> {
-      await exportBackup(true);
-      toast("Backup exported.");
-    });
+    $("#btnQuickBackup").addEventListener("click", ()=>exportBackup(true));
 
     $("#btnWipe").addEventListener("click", async ()=> {
-      if(!confirm("This will delete ALL local clients and files in this browser. Continue?")) return;
-      await idbClear(state.db, STORE_CLIENTS);
-      await idbClear(state.db, STORE_FILES);
-      state.clients = [];
-      toast("Local data wiped.");
-      render();
+      const snapshot=await readDatabaseSnapshot();
+      const latest=Math.max(0,...snapshot.clients.map(c=>c.updatedAt||0),...snapshot.files.map(f=>f.createdAt||0));
+      if(!backupHistory().at || backupHistory().at<latest){alert("Create a current full backup and save the downloaded file before clearing local records.");return;}
+      if(prompt("This permanently deletes all clients and attachments in this browser. Confirm your full backup is saved. Type DELETE ALL to continue.")!=="DELETE ALL")return;
+      try{
+        await new Promise((resolve,reject)=>{
+          const transaction=state.db.transaction([STORE_CLIENTS,STORE_FILES],"readwrite");
+          transaction.objectStore(STORE_CLIENTS).clear();transaction.objectStore(STORE_FILES).clear();
+          transaction.oncomplete=resolve;transaction.onabort=transaction.onerror=()=>reject(transaction.error);
+        });
+        state.clients=[];toast("Local records cleared.");render();
+      }catch(error){toast("Could not clear records: "+error.message);}
     });
 
     // Dashboard filters
@@ -2669,7 +2582,7 @@
       saveSettings();
       toast("Settings reset.");
     });
-    $("#btnGenerateMockData").addEventListener("click", async ()=> {
+    $("#btnGenerateMockData")?.addEventListener("click", async ()=> {
       if(!confirm("Generate 20 mock clients with all fields filled? This will add them to your database.")) return;
       await generateMockData();
     });
@@ -2679,7 +2592,7 @@
 
     // Modal actions
     $("#btnAddDep").addEventListener("click", addDependent);
-    $("#fileInput").addEventListener("change", (e)=> addFiles(e.target.files));
+    $("#fileInput").addEventListener("change", (e)=> addFiles(e.target.files).catch(reportSaveError));
     $("#btnBuildPacket").addEventListener("click", renderPacketPreview);
     $("#btnPrintFromModal").addEventListener("click", printClientFromModal);
     const modalPanel = $("#modal .panel");
@@ -2717,13 +2630,24 @@
     importInput.addEventListener("change", async (e)=> {
       const f = e.target.files?.[0];
       if(!f) return;
-      await importBackupFile(f);
-      importInput.value = "";
+      try { await importBackupFile(f); }
+      catch(error){ alert("Backup was not imported: "+error.message); }
+      finally { importInput.value = ""; }
     });
+
+    $("#backupForm").addEventListener("submit",finishExport);
+    $("#restoreUnlock").addEventListener("submit",unlockRestore);
+    $("#restoreMode").addEventListener("change",()=>showRestorePreview().catch(error=>$("#restoreError").textContent=error.message));
+    $("#confirmRestore").addEventListener("click",finishRestore);
+    $$("[data-close-dialog]").forEach(button=>button.addEventListener("click",()=>$("#"+button.dataset.closeDialog).close()));
+    $("#backupDialog").addEventListener("close",()=>{$("#backupPassword").value="";$("#backupPasswordConfirm").value="";});
+    $("#restoreDialog").addEventListener("close",()=>{$("#restorePassword").value="";pendingRestore=null;});
 
     // Keyboard shortcuts
     window.addEventListener("keydown", (e)=>{
-      if(e.key === "Escape" && state.modalOpen){ showModal(false); }
+      if(document.querySelector("dialog[open]")) return;
+      if(e.key === "Escape" && state.modalOpen){ closeClient(); }
+      if(e.target.matches("input,textarea,select") || e.ctrlKey || e.metaKey || e.altKey) return;
       if(e.key.toLowerCase() === "n" && !state.modalOpen){ $("#btnNew").click(); }
       if(e.key === "/" && !state.modalOpen){
         e.preventDefault();
@@ -2732,6 +2656,9 @@
       }
     });
 
+    window.addEventListener("beforeunload", e => {
+      if(state.autosaveDirty || state.saveInFlight){ e.preventDefault(); e.returnValue = ""; }
+    });
     render();
     setTab("dashboard");
   }

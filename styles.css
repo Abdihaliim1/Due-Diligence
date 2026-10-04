@@ -1044,3 +1044,21 @@ tr:hover td{background:#f9fafb}
   .kpi-grid{grid-template-columns:repeat(3, 1fr)}
   .dashboard-grid{grid-template-columns:1fr}
 }
+
+/* Review and recovery controls */
+[hidden] { display: none !important; }
+.official-part { border: 1px solid #dbe3ef; border-radius: 10px; padding: 14px; margin: 16px 0; }
+.official-part legend { font-weight: 700; color: #1e40af; padding: 0 6px; }
+.official-question { margin: 10px 0; }
+.official-question label { line-height: 1.5; }
+.legacy-checklist { border: 1px solid #dbe3ef; border-radius: 10px; padding: 12px; margin: 16px 0; }
+.legacy-checklist summary, .danger-zone summary { cursor: pointer; font-weight: 600; }
+.backup-reminder { padding: 14px; background: #fff7ed; border: 1px solid #fed7aa; border-radius: 12px; margin: 14px 0; color: #7c2d12; }
+.backup-dialog { max-width: 540px; width: calc(100% - 40px); border: 1px solid #dbe3ef; border-radius: 16px; padding: 24px; color: #172033; }
+.backup-dialog::backdrop { background: rgba(15,23,42,.55); }
+.backup-dialog input:not([type=checkbox]), .backup-dialog select { width: 100%; box-sizing: border-box; margin: 8px 0 16px; }
+.backup-dialog p { line-height: 1.5; }
+.dialog-actions { display: flex; justify-content: flex-end; gap: 10px; }
+.danger-zone { border: 1px solid #fecaca; border-radius: 10px; padding: 14px; }
+#backupError, #restoreError { color: #9f1239; min-height: 20px; }
+@media(max-width: 640px) { .official-part .row { grid-template-columns: 1fr; } .backup-dialog { padding: 18px; } }

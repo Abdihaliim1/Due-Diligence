@@ -17,7 +17,7 @@
           <div class="meta">
             3185 Morse Rd Ste 15, Columbus, Ohio 43231 • Preparer: Abdihaliim Ali<br/>
             Phone: 615-638-2490 • Email: 1@asal.llc<br/>
-            <span class="badge ok" style="margin-top:4px">IRS 2025 Compliant</span>
+            <span class="badge ok" style="margin-top:4px">Tax year 2025</span>
             <span class="badge" style="margin-top:4px">Form 8867</span>
           </div>
         </div>
@@ -26,7 +26,7 @@
       <div class="actions">
         <button class="primary" id="btnNew">New Client</button>
         <button id="btnQuickBackup">Quick Backup</button>
-        <button class="danger" id="btnWipe">Wipe Local Data</button>
+
       </div>
     </div>
 
@@ -40,6 +40,7 @@
       </div>
     </div>
 
+    <div id="backupReminder" class="backup-reminder" role="status" hidden></div>
     <!-- DASHBOARD -->
     <section class="card" id="tab-dashboard">
       <!-- Tax Year Banner -->
@@ -47,11 +48,11 @@
         <div class="tax-year-banner">
           <div>
             <div class="year">Tax Season 2025</div>
-            <div class="info">IRS Form 8867 Due Diligence Compliant</div>
+            <div class="info">Form 8867 interview and recordkeeping</div>
           </div>
           <div style="text-align:right">
-            <div style="font-size:11px;opacity:0.9">Penalty: $635/failure</div>
-            <div style="font-size:10px;opacity:0.7">Document retention: 3 years</div>
+            <div style="font-size:11px;opacity:0.9">Penalty: $650/failure (filed in 2026)</div>
+            <div style="font-size:10px;opacity:0.7">Retention: 3 years from latest applicable date</div>
           </div>
         </div>
       </div>
@@ -260,7 +261,7 @@
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="3">
                 <polyline points="20,6 9,17 4,12"></polyline>
               </svg>
-              <span>IRS Form 8867 Questions (Parts I-V)</span>
+              <span>Form 8867 review (Parts I–VI)</span>
             </div>
             <div class="checklist-item">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="3">
@@ -376,19 +377,21 @@
 
     <!-- BACKUP -->
     <section class="card" id="tab-backup" style="display:none">
-      <h2>Backup & Transfer</h2>
+      <h2>Backup & Restore</h2>
+      <p>Records and attachments stay in this browser. Store a full backup somewhere secure outside this browser; browser storage alone is not a backup.</p>
+      <p class="small"><b>Last full export prepared:</b> <span id="lastBackup">None yet</span>. Check that the downloaded file is saved.</p>
 
       <div class="row">
         <div>
           <label>Export everything (clients + files)</label>
-          <button class="primary" id="btnExport">Export JSON Backup</button>
-          <div class="small" style="margin-top:8px">Saves a single JSON file you can store safely.</div>
+          <button class="primary" id="btnExport">Create Encrypted Backup</button>
+          <div class="small" style="margin-top:8px">Includes client records, attachments, and office header. Protected by a password you choose.</div>
         </div>
         <div>
           <label>Import a backup</label>
-          <button id="btnImport">Import JSON Backup</button>
+          <button id="btnImport">Restore Backup</button>
           <input id="importFile" type="file" accept="application/json" style="display:none" />
-          <div class="small" style="margin-top:8px">Restores clients and uploaded files into this browser.</div>
+          <div class="small" style="margin-top:8px">Preview the contents before restoring. Supports older JSON backups.</div>
         </div>
       </div>
 
@@ -396,9 +399,9 @@
 
       <div class="row">
         <div>
-          <label>Export selected clients (without files)</label>
-          <button id="btnExportLite">Export Lite JSON</button>
-          <div class="small" style="margin-top:8px">Good for sharing with another system, smaller file.</div>
+          <label>Export all client records (without attachments)</label>
+          <button id="btnExportLite">Export Records Only</button>
+          <div class="small" style="margin-top:8px">Encrypted, smaller export. Does not replace a full backup with attachments.</div>
         </div>
         <div>
           <label>Data health</label>
@@ -433,34 +436,10 @@
 
       <div class="divider"></div>
 
-      <div class="row">
-        <div>
-          <label>Testing & Development</label>
-          <button id="btnGenerateMockData" class="primary">Generate 20 Mock Clients</button>
-          <div class="small" style="margin-top:8px">
-            Creates 20 test clients with all fields filled. Useful for testing and demos.
-          </div>
-        </div>
-        <div>
-          <label>Development Tools</label>
-          <div class="small">
-            <div class="pill"><span>Mock data:</span> <b>Available</b></div>
-            <div class="pill"><span>Console access:</span> <b>generateMockData()</b></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="divider"></div>
-
-      <div class="small">
-        <b>Big ideas you can add later (optional):</b><br/>
-        • Multi-user login + cloud sync (Firebase)<br/>
-        • Role permissions (admin / preparer / intake assistant)<br/>
-        • E-signature capture (canvas) + audit log<br/>
-        • OCR & document classification (client ID, W-2, 1099)<br/>
-        • Task board (missing docs, callbacks, returns waiting)<br/>
-        • Billing workflow (if you ever want it)<br/>
-      </div>
+      <details class="danger-zone"><summary>Advanced data controls</summary>
+        <p>Export a full backup before clearing this browser. This action permanently removes its local records and attachments.</p>
+        <button class="danger" id="btnWipe">Clear all local records…</button>
+      </details>
     </section>
 
     <div class="footer">
@@ -534,12 +513,12 @@
             <input id="f_ssn" placeholder="1234" />
           </div>
           <div>
-            <label>SSN valid for employment? <span class="badge warn" style="font-size:9px">Required for EITC/CTC</span></label>
+            <label>Taxpayer SSN valid for employment?</label>
             <select id="f_ssn_valid">
               <option value="">Select…</option>
               <option value="Yes">Yes - Valid for employment</option>
               <option value="No">No - Not valid for employment</option>
-              <option value="ITIN">ITIN (not valid for EITC/CTC)</option>
+              <option value="ITIN">ITIN — review joint-return rules</option>
             </select>
           </div>
           <div>
@@ -698,15 +677,17 @@
       <section id="mtab-ddq" style="display:none">
         <div class="ddq-header" style="background:#f0f9ff;border:1px solid #0ea5e9;border-radius:12px;padding:12px;margin-bottom:14px">
           <h3 style="margin:0 0 6px;color:#0369a1">IRS Form 8867 - Paid Preparer's Due Diligence Checklist</h3>
-          <div class="small" style="color:#0369a1">Tax Year 2025 • EITC/CTC/ACTC/ODC/AOTC/HOH • Penalty: $635 per failure</div>
+          <div class="small" style="color:#0369a1">Tax year 2025 • Reviewed October 4, 2026 • Returns filed in 2026: $650 per due-diligence failure</div>
         </div>
 
-        <!-- Part I: Due Diligence Requirements (All Credits) -->
+        <div id="officialChecklist" class="ddq-section"></div>
+        <details class="legacy-checklist"><summary>Earlier supporting answers (retained for reference)</summary>
+        <!-- Earlier interview answers; not automatically mapped to Form 8867. -->
         <div class="ddq-section">
-          <h4 style="margin:0 0 10px;padding:8px;background:#e0e7ff;border-radius:8px">Part I: Due Diligence Requirements (All Credits)</h4>
+          <h4 style="margin:0 0 10px;padding:8px;background:#e0e7ff;border-radius:8px">Earlier supporting interview answers</h4>
           <div class="row">
             <div>
-              <label>Line 2: Did you complete applicable worksheets for each credit?</label>
+              <label>Did you complete applicable worksheets for each credit?</label>
               <select id="d_completed_worksheets">
                 <option value="">Select…</option>
                 <option value="Yes">Yes</option>
@@ -715,7 +696,7 @@
               </select>
             </div>
             <div>
-              <label>Line 3: Does any information appear incorrect or inconsistent?</label>
+              <label>Does any information appear incorrect or inconsistent?</label>
               <select id="d_info_incorrect">
                 <option value="">Select…</option>
                 <option value="No">No - All information appears correct</option>
@@ -723,7 +704,7 @@
               </select>
             </div>
             <div>
-              <label>Line 4: Did you make reasonable inquiries to verify eligibility?</label>
+              <label>Did you make reasonable inquiries to verify eligibility?</label>
               <select id="d_reasonable_inquiries">
                 <option value="">Select…</option>
                 <option value="Yes">Yes</option>
@@ -731,7 +712,7 @@
               </select>
             </div>
             <div>
-              <label>Line 5: Did you document inquiries and taxpayer responses?</label>
+              <label>Did you document inquiries and taxpayer responses?</label>
               <select id="d_documented_inquiries">
                 <option value="">Select…</option>
                 <option value="Yes">Yes</option>
@@ -739,7 +720,7 @@
               </select>
             </div>
             <div>
-              <label>Line 6: Did you advise taxpayer IRS may request documentation?</label>
+              <label>Did you advise taxpayer IRS may request documentation?</label>
               <select id="d_advised_irs">
                 <option value="">Select…</option>
                 <option value="Yes">Yes</option>
@@ -747,7 +728,7 @@
               </select>
             </div>
             <div>
-              <label>Line 7: Was credit previously denied (Form 8862 required)?</label>
+              <label>Was credit previously denied (Form 8862 required)?</label>
               <select id="d_form_8862_required">
                 <option value="">Select…</option>
                 <option value="No">No - Not previously denied</option>
@@ -764,7 +745,7 @@
               </select>
             </div>
             <div>
-              <label>Line 8: Is Schedule C required (self-employment)?</label>
+              <label>Is Schedule C required (self-employment)?</label>
               <select id="d_schedule_c_required">
                 <option value="">Select…</option>
                 <option value="No">No</option>
@@ -776,9 +757,11 @@
 
         <div class="divider"></div>
 
+        </details>
+
         <!-- Part II: EITC Questions -->
         <div class="ddq-section" id="ddq_eitc_section">
-          <h4 style="margin:0 0 10px;padding:8px;background:#dcfce7;border-radius:8px">Part II: Earned Income Credit (EITC) - Form 8867 Line 9</h4>
+          <h4 style="margin:0 0 10px;padding:8px;background:#dcfce7;border-radius:8px">EITC supporting interview</h4>
           <div class="row">
             <div>
               <label>Is taxpayer eligible for EITC?</label>
@@ -789,7 +772,7 @@
               </select>
             </div>
             <div>
-              <label>Line 9a: Is there a qualifying child for EITC?</label>
+              <label>Is there a qualifying child for EITC?</label>
               <select id="d_eitc_qualifying_child">
                 <option value="">Select…</option>
                 <option value="Yes">Yes - Qualifying child claimed</option>
@@ -797,7 +780,7 @@
               </select>
             </div>
             <div>
-              <label>Line 9c: Do tiebreaker rules apply?</label>
+              <label>Do tiebreaker rules apply?</label>
               <select id="d_eitc_tiebreaker">
                 <option value="">Select…</option>
                 <option value="No">No - No tiebreaker needed</option>
@@ -806,7 +789,7 @@
               </select>
             </div>
             <div>
-              <label>Age requirement met? (25-65 if no child)</label>
+              <label>Age requirement met? (at least 25 but under 65 at year-end without a qualifying child; either spouse on a joint return)</label>
               <select id="d_eitc_age_met">
                 <option value="">Select…</option>
                 <option value="Yes">Yes</option>
@@ -839,7 +822,7 @@
 
         <!-- Part III: CTC/ACTC/ODC Questions -->
         <div class="ddq-section" id="ddq_ctc_section">
-          <h4 style="margin:0 0 10px;padding:8px;background:#fef3c7;border-radius:8px">Part III: Child Tax Credit / Additional Child Tax Credit / ODC - Lines 10-12</h4>
+          <h4 style="margin:0 0 10px;padding:8px;background:#fef3c7;border-radius:8px">CTC / ACTC / ODC supporting interview</h4>
           <div class="row">
             <div>
               <label>Is there a qualifying child for CTC?</label>
@@ -874,7 +857,7 @@
               </select>
             </div>
             <div>
-              <label>Child residency verified (&gt;6 months)?</label>
+              <label>Child residency or an applicable exception reviewed?</label>
               <select id="d_ctc_residency">
                 <option value="">Select…</option>
                 <option value="Yes">Yes - Verified</option>
@@ -890,7 +873,7 @@
               </select>
             </div>
             <div>
-              <label>Line 12: Does Form 8332 apply (divorced/separated)?</label>
+              <label>Does Form 8332 apply (divorced/separated)?</label>
               <select id="d_form_8332_applies">
                 <option value="">Select…</option>
                 <option value="No">No - Not applicable</option>
@@ -913,10 +896,10 @@
 
         <!-- Part IV: AOTC Questions -->
         <div class="ddq-section" id="ddq_aotc_section">
-          <h4 style="margin:0 0 10px;padding:8px;background:#fce7f3;border-radius:8px">Part IV: American Opportunity Tax Credit (AOTC) - Line 13</h4>
+          <h4 style="margin:0 0 10px;padding:8px;background:#fce7f3;border-radius:8px">AOTC supporting interview</h4>
           <div class="row">
             <div>
-              <label>Line 13: Is student eligible for AOTC?</label>
+              <label>Is student eligible for AOTC?</label>
               <select id="d_aotc_eligible">
                 <option value="">Select…</option>
                 <option value="Yes">Yes</option>
@@ -925,7 +908,7 @@
               </select>
             </div>
             <div>
-              <label>First 4 years of post-secondary education?</label>
+              <label>First four years of post-secondary education not completed before this tax year, and credit not claimed for four prior tax years?</label>
               <select id="d_aotc_first_4_years">
                 <option value="">Select…</option>
                 <option value="Yes">Yes - First 4 years</option>
@@ -976,10 +959,10 @@
 
         <!-- Part V: HOH Questions -->
         <div class="ddq-section" id="ddq_hoh_section">
-          <h4 style="margin:0 0 10px;padding:8px;background:#e0e7ff;border-radius:8px">Part V: Head of Household (HOH) Filing Status - Line 14</h4>
+          <h4 style="margin:0 0 10px;padding:8px;background:#e0e7ff;border-radius:8px">Head of Household supporting interview</h4>
           <div class="row">
             <div>
-              <label>Line 14: Is taxpayer unmarried or considered unmarried?</label>
+              <label>Is taxpayer unmarried or considered unmarried?</label>
               <select id="d_hoh_unmarried">
                 <option value="">Select…</option>
                 <option value="Yes">Yes</option>
@@ -1006,7 +989,7 @@
               </select>
             </div>
             <div>
-              <label>Qualifying person lived with taxpayer &gt;6 months?</label>
+              <label>HOH residency rule reviewed (including qualifying-parent and temporary-absence exceptions)?</label>
               <select id="d_hoh_lived">
                 <option value="">Select…</option>
                 <option value="Yes">Yes</option>
@@ -1106,7 +1089,7 @@
           <div class="small" style="margin-bottom:10px;color:#1e40af">Ask these questions to meet the knowledge requirement. Document actual responses.</div>
           <div class="doc-tick-section">
             <div class="doc-tick-section-heading">
-              <span>Document ticks sync with the Verification tab</span>
+              <span>Documents reviewed in the Files tab</span>
             </div>
             <div id="docTickSummary" class="doc-tick-summary"></div>
           </div>
@@ -1245,7 +1228,7 @@
             </div>
           </div>
           <div class="small" style="margin-top:10px;color:#166534">
-            <b>Penalty Warning:</b> Failure to meet due diligence requirements may result in a $635 penalty per credit/status for returns filed in 2025.
+            <b>Penalty Warning:</b> Failure to meet due diligence requirements may result in a $650 penalty per covered credit/status for returns filed in 2026.
           </div>
         </div>
 
@@ -1269,8 +1252,8 @@
             <label>Document Verification Status</label>
             <div id="docVerificationSummary" class="small">
               <div class="pill"><span>Verified:</span> <b id="verifiedCount">0</b></div>
-              <div class="pill"><span>Required:</span> <b id="requiredCount">0</b></div>
-              <div class="pill"><span>Pending:</span> <b id="pendingCount">0</b></div>
+              <div class="pill"><span>Suggested:</span> <b id="requiredCount">0</b></div>
+              <div class="pill"><span>To review:</span> <b id="pendingCount">0</b></div>
             </div>
           </div>
         </div>
@@ -1279,7 +1262,7 @@
 
         <!-- Document Verification Checklist with Tick Boxes -->
         <h3 style="margin:0 0 10px">Document Verification Checklist</h3>
-        <div class="small" style="margin-bottom:14px;color:#6b7280">Check each document as you verify it. Required documents are marked with <span class="badge warn" style="font-size:9px">Required</span></div>
+        <div class="small" style="margin-bottom:14px;color:#6b7280">Record documents actually reviewed and keep copies of any you relied on. Suggestions adapt to this client; they are not a universal IRS document requirement. Explain alternative evidence in the interview notes.</div>
 
         <!-- Identity Documents -->
         <div class="doc-category" style="background:#f9fafb;border-radius:12px;padding:12px;margin-bottom:12px">
@@ -1465,8 +1448,32 @@
     </div>
   </div>
 
-  <div class="toast" id="toast"></div>
+  <dialog id="backupDialog" class="backup-dialog" aria-labelledby="backupDialogTitle">
+    <form id="backupForm">
+      <h2 id="backupDialogTitle">Create encrypted full backup</h2>
+      <p>Your backup password protects the downloaded file. Keep it separately; a forgotten password cannot be recovered.</p>
+      <label for="backupPassword">Backup password (at least 12 characters)</label><input id="backupPassword" type="password" minlength="12" required autocomplete="new-password" />
+      <label for="backupPasswordConfirm">Confirm password</label><input id="backupPasswordConfirm" type="password" minlength="12" required autocomplete="new-password" />
+      <p id="backupError" class="small" role="status"></p>
+      <div class="dialog-actions"><button type="button" data-close-dialog="backupDialog">Cancel</button><button id="confirmBackup" type="submit" class="primary">Encrypt & download</button></div>
+    </form>
+  </dialog>
+  <dialog id="restoreDialog" class="backup-dialog" aria-labelledby="restoreTitle">
+    <h2 id="restoreTitle">Review backup before restoring</h2>
+    <form id="restoreUnlock"><label for="restorePassword">Backup password</label><input id="restorePassword" type="password" required autocomplete="off" /><button id="unlockBackup" type="submit" class="primary">Unlock & preview</button></form>
+    <div id="restorePreview" hidden>
+      <label for="restoreMode">If a client already exists in this browser</label><select id="restoreMode"><option value="keep">Keep existing client and attachments</option><option value="copies">Add the backup client as a separate copy</option></select>
+      <p id="restoreSummary"></p>
+      <label class="question-check"><input id="restoreHeader" type="checkbox" /> Use the office header from this backup</label>
+      <button id="confirmRestore" class="primary">Restore these records</button>
+    </div>
+    <p id="restoreError" class="small" role="alert"></p>
+    <button type="button" data-close-dialog="restoreDialog">Cancel</button>
+  </dialog>
+  <div class="toast" id="toast" role="status"></div>
 
+  <script src="dd-core.js"></script>
+  <script src="dd-backup.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

@@ -192,14 +192,14 @@
     return new Promise((resolve, reject) => {
       const transaction = db.transaction(store, "readwrite");
       transaction.objectStore(store).put(value);
-      transaction.oncomplete = () => resolve(true);
+      transaction.oncomplete = () => { markBackupChanged(); resolve(true); };
       transaction.onabort = transaction.onerror = () => reject(transaction.error || new Error("Save failed"));
     });
   }
   function idbDelete(db, store, key){
     return new Promise((resolve, reject) => {
       const req = tx(db, store, "readwrite").delete(key);
-      req.onsuccess = () => resolve(true);
+      req.onsuccess = () => { markBackupChanged(); resolve(true); };
       req.onerror = () => reject(req.error);
     });
   }
@@ -718,7 +718,7 @@
         type: "warning",
         icon: "📄",
         title: `${missingDocsClients.length} client(s) need documents`,
-        message: "Required documents are missing for due diligence compliance."
+        message: "Record the document review and check any suggested evidence that is still pending."
       });
     }
 
@@ -833,6 +833,7 @@
   function showModal(show){
     state.modalOpen = show;
     $("#modal").classList.toggle("show", show);
+    updateSaveIndicators();
     if(!show){
       clearTimeout(state.autosaveTimer);
       state.autosaveTimer = null;
@@ -2367,6 +2368,10 @@
     });
   }
 
+  function markBackupChanged(){
+    try{const history=backupHistory();history.changedAt=Date.now();localStorage.setItem(BACKUP_HISTORY_KEY,JSON.stringify(history));}catch{}
+  }
+
   function backupHistory(){
     try{return JSON.parse(localStorage.getItem(BACKUP_HISTORY_KEY)||"{}");}catch{return {};}
   }
@@ -2376,7 +2381,7 @@
     const latest=Math.max(0,...state.clients.map(c=>c.updatedAt||0),...files.map(f=>f.createdAt||0));
     $("#lastBackup").textContent=saved.at?fmtWhen(saved.at):"No full backup prepared in this browser";
     const reminder=$("#backupReminder");
-    const needsBackup=state.clients.length && (!saved.at || latest>saved.at || Date.now()-saved.at>86400000);
+    const needsBackup=state.clients.length && (!saved.at || latest>saved.at || (saved.changedAt||0)>saved.at || saved.clients!==state.clients.length || saved.files!==files.length || Date.now()-saved.at>86400000);
     reminder.hidden=!needsBackup;
     reminder.textContent=saved.at?"Back up your current records. The last full export was prepared on "+fmtWhen(saved.at)+". Save the downloaded file somewhere secure outside this browser.":"Your records are stored in this browser. Create an encrypted full backup and keep it in a secure location outside this browser.";
   }
@@ -2479,6 +2484,7 @@
         state.officeHeader=pendingRestore.data.settings.officeHeader;
         try{saveSettings();}catch{toast("Records restored, but the office header could not be saved.");}
       }
+      if(plan.clients.length || files.length) markBackupChanged();
       pendingRestore=null;$("#restoreDialog").close();
       state.clients=await idbGetAll(state.db,STORE_CLIENTS);await render();
       toast(`Restored ${plan.clients.length} clients and ${files.length} attachments. Existing records preserved.`);

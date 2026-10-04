@@ -82,6 +82,16 @@
     if ((b.ctc || b.actc) && c.ddq?.form_8332_applies === 'Yes' && c.ddq?.form_8332_attached !== 'Yes') issues.push('Complete the required Form 8332 attachment.');
     if (b.aotc && (c.ddq?.aotc_eligible_student === 'No' || c.ddq?.aotc_felony_drug === 'Yes')) issues.push('Resolve the AOTC eligibility conflict.');
     if (b.hoh && (c.ddq?.hoh_paid_over_half === 'No' || c.ddq?.hoh_unmarried_verified === 'No')) issues.push('Resolve the head-of-household eligibility conflict.');
+    const conflicts = [
+      [b.eitc && c.ddq?.eitc_qualifying_child === 'Yes', ['eitc_residency_verified','eitc_relationship_verified'], 'EIC child residency or relationship'],
+      [b.ctc || b.actc, ['ctc_qualifying_child','ctc_child_age_verified','ctc_ssn_valid','ctc_citizenship_verified','ctc_support_test_met'], 'CTC/ACTC eligibility'],
+      [b.aotc, ['aotc_first_4_years','aotc_enrollment_status','aotc_expenses_verified'], 'AOTC eligibility or expenses'],
+      [b.hoh, ['hoh_qualifying_person','hoh_qualifying_person_lived'], 'head-of-household qualifying-person rules']
+    ];
+    for (const [applies, keys, label] of conflicts) {
+      if (applies && keys.some(key=>c.ddq?.[key] === 'No')) issues.push('Resolve the supporting interview conflict about ' + label + '.');
+    }
+    if ((b.ctc || b.actc) && c.ddq?.ctc_residency_verified === 'No' && c.ddq?.form_8332_attached !== 'Yes' && !f.exception_notes?.trim()) issues.push('Review the child residency answer and document any applicable exception.');
     if (b.hoh && c.filing_status !== 'Head of Household') issues.push('Head of Household selection does not match filing status.');
     return [...new Set(issues)];
   }

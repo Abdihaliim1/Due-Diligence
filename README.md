@@ -35,7 +35,7 @@ Open `index.html` directly in Chrome/Edge.
 - File uploads: Stored inside IndexedDB as **blobs** (kept locally).
 
 ## Export / Import
-Use the **Backup** tab to export everything to JSON and re-import on another computer.
+Use the **Backup** tab to create an encrypted full backup and restore it on another computer. Older unencrypted JSON backups can still be imported.
 
 ## Testing with Mock Data
 To generate 20 test clients with all fields filled:

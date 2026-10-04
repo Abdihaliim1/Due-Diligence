@@ -1062,3 +1062,7 @@ tr:hover td{background:#f9fafb}
 .danger-zone { border: 1px solid #fecaca; border-radius: 10px; padding: 14px; }
 #backupError, #restoreError { color: #9f1239; min-height: 20px; }
 @media(max-width: 640px) { .official-part .row { grid-template-columns: 1fr; } .backup-dialog { padding: 18px; } }
+
+.official-part .row { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; align-items: end; }
+.official-question label { font-size: 13px; }
+@media(max-width:640px) { .official-part .row { grid-template-columns: 1fr; } }

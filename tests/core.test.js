@@ -46,3 +46,5 @@ test('legacy fixture remains readable and malformed backups fail before import',
   const unsafe=JSON.parse('{"meta":{"app":"asal-dd","version":2},"clients":[],"files":[],"__proto__":{"polluted":true}}');assert.throws(()=>backup.validate(unsafe),/Unsafe/);
   const duplicate=payload();duplicate.clients.push(structuredClone(duplicate.clients[0]));assert.throws(()=>backup.validate(duplicate),/duplicate/);
 });
+
+test('negative supporting interview answers cannot be overridden by checked form answers',()=>{const c=completeClient();c.ddq.eitc_qualifying_child='Yes';c.ddq.form8867['9b']='Yes';c.ddq.form8867['9c']='Yes';c.ddq.eitc_relationship_verified='No';assert(core.reviewIssues(c).some(x=>x.includes('relationship')));});
